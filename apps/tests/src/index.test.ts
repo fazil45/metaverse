@@ -1,20 +1,21 @@
 import { test, expect, describe, beforeAll } from "bun:test";
 import axios from "axios";
 
-const BACKEND_URL = "http://localhost:4000";
+const HTTP_URL = "http://localhost:4000";
+const WS_URL = "ws://localhost:4001";
 
 describe("Authentication", () => {
   test("User is able to sign up", async () => {
     const username = "fazil" + Math.random();
     const password = "123455";
-    const response = await axios.post(`${BACKEND_URL}/api/v1/signup`, {
+    const response = await axios.post(`${HTTP_URL}/api/v1/signup`, {
       username,
       password,
       type: "admin",
     });
     expect(response.data.statusCode).toBe(200);
 
-    const secondResponse = await axios.post(`${BACKEND_URL}/api/v1/signup`, {
+    const secondResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
       username,
       password,
       type: "admin",
@@ -25,7 +26,7 @@ describe("Authentication", () => {
   test("Signup request fails if the username is empty", async () => {
     const password = "123456";
 
-    const response = await axios.post(`${BACKEND_URL}/api/v1/signup`, {
+    const response = await axios.post(`${HTTP_URL}/api/v1/signup`, {
       password,
       admin: "admin",
     });
@@ -37,13 +38,13 @@ describe("Authentication", () => {
     const username = `fazil-${Math.random()}`;
     const password = "123456";
 
-    await axios.post(`${BACKEND_URL}/api/v1/signup`, {
+    await axios.post(`${HTTP_URL}/api/v1/signup`, {
       username,
       password,
       role: "admin",
     });
 
-    const response = await axios.post(`${BACKEND_URL}/api/v1/signin`, {
+    const response = await axios.post(`${HTTP_URL}/api/v1/signin`, {
       username,
       password,
     });
@@ -56,13 +57,13 @@ describe("Authentication", () => {
     const username = `fazil-${Math.random()}`;
     const password = "123456";
 
-    await axios.post(`${BACKEND_URL}/api/v1/signup`, {
+    await axios.post(`${HTTP_URL}/api/v1/signup`, {
       username,
       password,
       role: "admin",
     });
 
-    const response = await axios.post(`${BACKEND_URL}/api/v1/signin`, {
+    const response = await axios.post(`${HTTP_URL}/api/v1/signin`, {
       username: "fazil-random-123",
       password,
     });
@@ -85,24 +86,18 @@ describe("User metadata endpoints", () => {
     const usernameUser = `fazil-user-${Math.random()}`;
     const password = `123456`;
 
-    const adminSignupResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signup`,
-      {
-        usernameAdmin,
-        password,
-        role: "admin",
-      },
-    );
+    const adminSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
+      usernameAdmin,
+      password,
+      role: "admin",
+    });
 
     adminId = adminSignupResponse.data.userId;
 
-    const adminSigninResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signin`,
-      {
-        usernameAdmin,
-        password,
-      },
-    );
+    const adminSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
+      usernameAdmin,
+      password,
+    });
 
     const setCookieHeader = adminSigninResponse.headers["set-cookie"];
 
@@ -111,24 +106,18 @@ describe("User metadata endpoints", () => {
       adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
     }
 
-    const userSignupResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signup`,
-      {
-        usernameUser,
-        password,
-        role: "user",
-      },
-    );
+    const userSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
+      usernameUser,
+      password,
+      role: "user",
+    });
 
     userId = userSignupResponse.data.userId;
 
-    const userSigninResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signin`,
-      {
-        usernameUser,
-        password,
-      },
-    );
+    const userSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
+      usernameUser,
+      password,
+    });
 
     const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
 
@@ -138,7 +127,7 @@ describe("User metadata endpoints", () => {
     }
 
     const avatarResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/avatar`,
+      `${HTTP_URL}/api/v1/admin/avatar`,
       {
         imageUrl:
           "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
@@ -153,7 +142,7 @@ describe("User metadata endpoints", () => {
 
   test("User can't update their metadata with a wrong avatar id", async () => {
     const response = await axios.post(
-      `${BACKEND_URL}/api/v1/metadata`,
+      `${HTTP_URL}/api/v1/metadata`,
       {
         avatarId: "123455",
       },
@@ -169,7 +158,7 @@ describe("User metadata endpoints", () => {
 
   test("User can update their metadata with a right avatar id", async () => {
     const response = await axios.post(
-      `${BACKEND_URL}/api/v1/user/metadata`,
+      `${HTTP_URL}/api/v1/user/metadata`,
       {
         avatarId,
       },
@@ -184,7 +173,7 @@ describe("User metadata endpoints", () => {
 
   test("User can't update their metadata without token", async () => {
     const response = await axios.post(
-      `${BACKEND_URL}/api/v1/user/metadata`,
+      `${HTTP_URL}/api/v1/user/metadata`,
       {
         avatarId,
       },
@@ -213,24 +202,18 @@ describe("User avatar information", () => {
     const usernameUser = `fazil-user-${Math.random()}`;
     const password = `123456`;
 
-    const adminSignupResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signup`,
-      {
-        usernameAdmin,
-        password,
-        role: "admin",
-      },
-    );
+    const adminSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
+      usernameAdmin,
+      password,
+      role: "admin",
+    });
 
     adminId = adminSignupResponse.data.userId;
 
-    const adminSigninResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signin`,
-      {
-        usernameAdmin,
-        password,
-      },
-    );
+    const adminSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
+      usernameAdmin,
+      password,
+    });
 
     const setCookieHeader = adminSigninResponse.headers["set-cookie"];
 
@@ -239,24 +222,18 @@ describe("User avatar information", () => {
       adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
     }
 
-    const userSignupResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signup`,
-      {
-        usernameUser,
-        password,
-        role: "user",
-      },
-    );
+    const userSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
+      usernameUser,
+      password,
+      role: "user",
+    });
 
     userId = userSignupResponse.data.userId;
 
-    const userSigninResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signin`,
-      {
-        usernameUser,
-        password,
-      },
-    );
+    const userSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
+      usernameUser,
+      password,
+    });
 
     const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
 
@@ -266,7 +243,7 @@ describe("User avatar information", () => {
     }
 
     const avatarResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/avatar`,
+      `${HTTP_URL}/api/v1/admin/avatar`,
       {
         imageUrl:
           "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
@@ -281,7 +258,7 @@ describe("User avatar information", () => {
 
   test("Get back avatar information for a user", async () => {
     const response = await axios.get(
-      `${BACKEND_URL}/api/v1/user/metadata/bulk?ids=[${userId}]`,
+      `${HTTP_URL}/api/v1/user/metadata/bulk?ids=[${userId}]`,
       {
         headers: {
           Cookie: userCookie!,
@@ -293,7 +270,7 @@ describe("User avatar information", () => {
   });
 
   test("Available avatars lists the recently created avatar", async () => {
-    const response = await axios.get(`${BACKEND_URL}/api/v1/avatars`, {
+    const response = await axios.get(`${HTTP_URL}/api/v1/avatars`, {
       headers: {
         Cookie: userCookie!,
       },
@@ -322,24 +299,18 @@ describe("Space information", () => {
     const usernameUser = `fazil-user-${Math.random()}`;
     const password = `123456`;
 
-    const adminSignupResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signup`,
-      {
-        usernameAdmin,
-        password,
-        role: "admin",
-      },
-    );
+    const adminSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
+      usernameAdmin,
+      password,
+      role: "admin",
+    });
 
     adminId = adminSignupResponse.data.userId;
 
-    const adminSigninResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signin`,
-      {
-        usernameAdmin,
-        password,
-      },
-    );
+    const adminSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
+      usernameAdmin,
+      password,
+    });
 
     const setCookieHeader = adminSigninResponse.headers["set-cookie"];
 
@@ -348,24 +319,18 @@ describe("Space information", () => {
       adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
     }
 
-    const userSignupResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signup`,
-      {
-        usernameUser,
-        password,
-        role: "user",
-      },
-    );
+    const userSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
+      usernameUser,
+      password,
+      role: "user",
+    });
 
     userId = userSignupResponse.data.userId;
 
-    const userSigninResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signin`,
-      {
-        usernameUser,
-        password,
-      },
-    );
+    const userSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
+      usernameUser,
+      password,
+    });
 
     const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
 
@@ -375,7 +340,7 @@ describe("Space information", () => {
     }
 
     const element1 = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/element`,
+      `${HTTP_URL}/api/v1/admin/element`,
       {
         imageUrl:
           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
@@ -391,7 +356,7 @@ describe("Space information", () => {
     );
 
     const element2 = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/element`,
+      `${HTTP_URL}/api/v1/admin/element`,
       {
         imageUrl:
           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
@@ -410,7 +375,7 @@ describe("Space information", () => {
     element2Id = element2.data.id;
 
     const map = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/map`,
+      `${HTTP_URL}/api/v1/admin/map`,
       {
         thumbnail: "https://thumbnail.com/a.png",
         dimensions: "100x200",
@@ -445,7 +410,7 @@ describe("Space information", () => {
 
   test("User is able to create a space", async () => {
     const response = await axios.post(
-      `${BACKEND_URL}/api/v1/space`,
+      `${HTTP_URL}/api/v1/space`,
       {
         name: "Test",
         dimensions: "100*200",
@@ -463,7 +428,7 @@ describe("Space information", () => {
 
   test("User is able to create a space without mapId (empty space)", async () => {
     const response = await axios.post(
-      `${BACKEND_URL}/api/v1/space`,
+      `${HTTP_URL}/api/v1/space`,
       {
         name: "Test",
         dimensions: "100*200",
@@ -480,7 +445,7 @@ describe("Space information", () => {
 
   test("User is not able to create a space without mapId and dimensions", async () => {
     const response = await axios.post(
-      `${BACKEND_URL}/api/v1/space`,
+      `${HTTP_URL}/api/v1/space`,
       {
         name: "Test",
       },
@@ -496,7 +461,7 @@ describe("Space information", () => {
 
   test("User is not able to delete a space that doesn't exist", async () => {
     const response = await axios.delete(
-      `${BACKEND_URL}/api/v1/space/randomIdDoesntexist`,
+      `${HTTP_URL}/api/v1/space/randomIdDoesntexist`,
       {
         headers: {
           Cookie: userCookie!,
@@ -509,7 +474,7 @@ describe("Space information", () => {
 
   test("User is able to delete a space that exist", async () => {
     const spaceCreateresponse = await axios.post(
-      `${BACKEND_URL}/api/v1/space`,
+      `${HTTP_URL}/api/v1/space`,
       {
         name: "Test",
         dimensions: "100*200",
@@ -523,7 +488,7 @@ describe("Space information", () => {
     );
 
     const response = await axios.delete(
-      `${BACKEND_URL}/api/v1/space/${spaceCreateresponse.data.spaceId}`,
+      `${HTTP_URL}/api/v1/space/${spaceCreateresponse.data.spaceId}`,
       {
         withCredentials: true,
       },
@@ -534,7 +499,7 @@ describe("Space information", () => {
 
   test("User should not be able to delete a space created by another user", async () => {
     const spaceCreateresponse = await axios.post(
-      `${BACKEND_URL}/api/v1/space`,
+      `${HTTP_URL}/api/v1/space`,
       {
         name: "Test",
         dimensions: "100*200",
@@ -548,7 +513,7 @@ describe("Space information", () => {
     );
 
     const response = await axios.delete(
-      `${BACKEND_URL}/api/v1/space${spaceCreateresponse.data.spaceId}`,
+      `${HTTP_URL}/api/v1/space${spaceCreateresponse.data.spaceId}`,
       {
         headers: {
           Cookie: adminCookie!,
@@ -560,13 +525,13 @@ describe("Space information", () => {
   });
 
   test("Admin has no spaces initially", async () => {
-    const response = await axios.get(`${BACKEND_URL}/api/v1/space/all`);
+    const response = await axios.get(`${HTTP_URL}/api/v1/space/all`);
     expect(response.data.spaces.length).toBe(0);
   });
 
   test("Admin has no spaces initially", async () => {
     const spaceCreateResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/space/all`,
+      `${HTTP_URL}/api/v1/space/all`,
       {
         name: "Test",
         dimensions: "100x200",
@@ -578,7 +543,7 @@ describe("Space information", () => {
       },
     );
 
-    const response = await axios.get(`${BACKEND_URL}/api/v1/space/all`, {
+    const response = await axios.get(`${HTTP_URL}/api/v1/space/all`, {
       headers: {
         Cookie: adminCookie!,
       },
@@ -609,24 +574,18 @@ describe("Arena endpoints", () => {
     const usernameUser = `fazil-user-${Math.random()}`;
     const password = `123456`;
 
-    const adminSignupResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signup`,
-      {
-        usernameAdmin,
-        password,
-        role: "admin",
-      },
-    );
+    const adminSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
+      usernameAdmin,
+      password,
+      role: "admin",
+    });
 
     adminId = adminSignupResponse.data.userId;
 
-    const adminSigninResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signin`,
-      {
-        usernameAdmin,
-        password,
-      },
-    );
+    const adminSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
+      usernameAdmin,
+      password,
+    });
 
     const setCookieHeader = adminSigninResponse.headers["set-cookie"];
 
@@ -635,24 +594,18 @@ describe("Arena endpoints", () => {
       adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
     }
 
-    const userSignupResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signup`,
-      {
-        usernameUser,
-        password,
-        role: "user",
-      },
-    );
+    const userSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
+      usernameUser,
+      password,
+      role: "user",
+    });
 
     userId = userSignupResponse.data.userId;
 
-    const userSigninResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signin`,
-      {
-        usernameUser,
-        password,
-      },
-    );
+    const userSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
+      usernameUser,
+      password,
+    });
 
     const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
 
@@ -662,7 +615,7 @@ describe("Arena endpoints", () => {
     }
 
     const element1 = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/element`,
+      `${HTTP_URL}/api/v1/admin/element`,
       {
         imageUrl:
           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
@@ -678,7 +631,7 @@ describe("Arena endpoints", () => {
     );
 
     const element2 = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/element`,
+      `${HTTP_URL}/api/v1/admin/element`,
       {
         imageUrl:
           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
@@ -697,7 +650,7 @@ describe("Arena endpoints", () => {
     element2Id = element2.data.id;
 
     const map = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/map`,
+      `${HTTP_URL}/api/v1/admin/map`,
       {
         thumbnail: "https://thumbnail.com/a.png",
         dimensions: "100x200",
@@ -730,7 +683,7 @@ describe("Arena endpoints", () => {
     mapId = map.data.mapId;
 
     const space = await axios.post(
-      `${BACKEND_URL}/api/v1/space`,
+      `${HTTP_URL}/api/v1/space`,
       {
         name: "Test",
         dimensions: "100x200",
@@ -746,12 +699,12 @@ describe("Arena endpoints", () => {
   });
 
   test("Incorrect spaceId returns a 400", async () => {
-    const response = await axios.get(`${BACKEND_URL}/api/v1/space/24sffsf`);
+    const response = await axios.get(`${HTTP_URL}/api/v1/space/24sffsf`);
     expect(response.data.statusCode).toBe(400);
   });
 
   test("Correct spaceId returns all the elements", async () => {
-    const response = await axios.get(`${BACKEND_URL}/api/v1/space/${spaceId}`, {
+    const response = await axios.get(`${HTTP_URL}/api/v1/space/${spaceId}`, {
       headers: { Cookie: userCookie! },
     });
     expect(response.data.dimensions).toBe("100x200");
@@ -759,11 +712,11 @@ describe("Arena endpoints", () => {
   });
 
   test("Delete endpoint is able to delete an element", async () => {
-    const response = await axios.get(`${BACKEND_URL}/api/v1/space/${spaceId}`, {
+    const response = await axios.get(`${HTTP_URL}/api/v1/space/${spaceId}`, {
       headers: { Cookie: userCookie! },
     });
 
-    await axios.delete(`${BACKEND_URL}/api/v1/space/element`, {
+    await axios.delete(`${HTTP_URL}/api/v1/space/element`, {
       headers: { Cookie: userCookie! },
       data: {
         spaceId: spaceId,
@@ -771,17 +724,16 @@ describe("Arena endpoints", () => {
       },
     });
 
-    const newResponse = await axios.get(
-      `${BACKEND_URL}/api/v1/space/${spaceId}`,
-      { headers: { Cookie: userCookie! } },
-    );
+    const newResponse = await axios.get(`${HTTP_URL}/api/v1/space/${spaceId}`, {
+      headers: { Cookie: userCookie! },
+    });
 
     expect(newResponse.data.elements.length).toBe(2);
   });
 
   test("Adding an element fails if the element lies outside the dimensions", async () => {
     const response = await axios.post(
-      `${BACKEND_URL}/api/v1/space/element`,
+      `${HTTP_URL}/api/v1/space/element`,
       {
         elementId: element1Id,
         spaceId: spaceId,
@@ -800,7 +752,7 @@ describe("Arena endpoints", () => {
 
   test("Adding an element works as expected", async () => {
     const response = await axios.post(
-      `${BACKEND_URL}/api/v1/space/element`,
+      `${HTTP_URL}/api/v1/space/element`,
       {
         elementId: element1Id,
         spaceId: spaceId,
@@ -814,9 +766,7 @@ describe("Arena endpoints", () => {
       },
     );
 
-    const newResponse = await axios.get(
-      `${BACKEND_URL}/api/v1/space/${spaceId}`,
-    );
+    const newResponse = await axios.get(`${HTTP_URL}/api/v1/space/${spaceId}`);
     expect(newResponse.data.elements.length).toBe(3);
   });
 });
@@ -834,24 +784,18 @@ describe("Admin Endpoints", () => {
     const usernameUser = `fazil-user-${Math.random()}`;
     const password = `123456`;
 
-    const adminSignupResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signup`,
-      {
-        usernameAdmin,
-        password,
-        role: "admin",
-      },
-    );
+    const adminSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
+      usernameAdmin,
+      password,
+      role: "admin",
+    });
 
     adminId = adminSignupResponse.data.userId;
 
-    const adminSigninResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signin`,
-      {
-        usernameAdmin,
-        password,
-      },
-    );
+    const adminSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
+      usernameAdmin,
+      password,
+    });
 
     const setCookieHeader = adminSigninResponse.headers["set-cookie"];
 
@@ -860,24 +804,18 @@ describe("Admin Endpoints", () => {
       adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
     }
 
-    const userSignupResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signup`,
-      {
-        usernameUser,
-        password,
-        role: "user",
-      },
-    );
+    const userSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
+      usernameUser,
+      password,
+      role: "user",
+    });
 
     userId = userSignupResponse.data.userId;
 
-    const userSigninResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/signin`,
-      {
-        usernameUser,
-        password,
-      },
-    );
+    const userSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
+      usernameUser,
+      password,
+    });
 
     const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
 
@@ -889,7 +827,7 @@ describe("Admin Endpoints", () => {
 
   test("User is not able to hit admin Endpoints", async () => {
     const elementResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/element`,
+      `${HTTP_URL}/api/v1/admin/element`,
       {
         imageUrl:
           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
@@ -905,7 +843,7 @@ describe("Admin Endpoints", () => {
     );
 
     const mapResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/map`,
+      `${HTTP_URL}/api/v1/admin/map`,
       {
         thumbnail: "https://thumbnail.com/a.png",
         dimensions: "100x200",
@@ -920,7 +858,7 @@ describe("Admin Endpoints", () => {
     );
 
     const createAvatarResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/avatar`,
+      `${HTTP_URL}/api/v1/admin/avatar`,
       {
         imageUrl:
           "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
@@ -933,7 +871,7 @@ describe("Admin Endpoints", () => {
     );
 
     const updateElementResponse = await axios.put(
-      `${BACKEND_URL}/api/v1/admin/element/123`,
+      `${HTTP_URL}/api/v1/admin/element/123`,
       {
         imageUrl:
           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
@@ -953,7 +891,7 @@ describe("Admin Endpoints", () => {
 
   test("Admin is able to hit admin Endpoints", async () => {
     const elementResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/element`,
+      `${HTTP_URL}/api/v1/admin/element`,
       {
         imageUrl:
           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
@@ -969,7 +907,7 @@ describe("Admin Endpoints", () => {
     );
 
     const mapResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/map`,
+      `${HTTP_URL}/api/v1/admin/map`,
       {
         thumbnail: "https://thumbnail.com/a.png",
         dimensions: "100x200",
@@ -984,7 +922,7 @@ describe("Admin Endpoints", () => {
     );
 
     const createAvatarResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/avatar`,
+      `${HTTP_URL}/api/v1/admin/avatar`,
       {
         imageUrl:
           "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
@@ -1003,7 +941,7 @@ describe("Admin Endpoints", () => {
 
   test("Admin is able to update the imageUrl for an element", async () => {
     const elementResponse = await axios.post(
-      `${BACKEND_URL}/api/v1/admin/element`,
+      `${HTTP_URL}/api/v1/admin/element`,
       {
         imageUrl:
           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
@@ -1019,7 +957,7 @@ describe("Admin Endpoints", () => {
     );
 
     const updateElementResponse = await axios.put(
-      `${BACKEND_URL}/api/v1/admin/element/${elementResponse.data.id}`,
+      `${HTTP_URL}/api/v1/admin/element/${elementResponse.data.id}`,
       {
         imageUrl:
           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
@@ -1031,6 +969,303 @@ describe("Admin Endpoints", () => {
       },
     );
 
-    expect(updateElementResponse.data.statusCode).toBe(200)
+    expect(updateElementResponse.data.statusCode).toBe(200);
+  });
+});
+
+describe("WebSocket tests", () => {
+  let userToken: string;
+  let userId: string;
+  let adminToken: string;
+  let adminId: string;
+  let userCookie: string;
+  let adminCookie: string;
+  let mapId: string;
+  let element1Id: string;
+  let element2Id: string;
+  let spaceId: string;
+  let ws1: WebSocket;
+  let ws2: WebSocket;
+  let ws1Messages: any[] = [];
+  let ws2Messages: any[] = [];
+  let userX: string;
+  let userY: string;
+  let adminX: string;
+  let adminY: string;
+
+  function waitForAndPopLatestMessage(messageArray: any[]) {
+    return new Promise((resolve) => {
+      if (messageArray.length > 0) {
+        resolve(messageArray.shift());
+      } else {
+        let interval = setInterval(() => {
+          if (messageArray.length > 0) {
+            resolve(messageArray.shift());
+            clearInterval(interval);
+          }
+        }, 100);
+      }
+    });
+  }
+
+  async function setupHTTP() {
+    const usernameAdmin = `fazil-admin-${Math.random()}`;
+    const usernameUser = `fazil-user-${Math.random()}`;
+    const password = `123456`;
+
+    const adminSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
+      usernameAdmin,
+      password,
+      role: "admin",
+    });
+
+    adminId = adminSignupResponse.data.userId;
+
+    const adminSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
+      usernameAdmin,
+      password,
+    });
+
+    const setCookieHeader = adminSigninResponse.headers["set-cookie"];
+
+    if (setCookieHeader && setCookieHeader.length > 0) {
+      adminCookie = setCookieHeader[0]!;
+      adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
+    }
+
+    const userSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
+      usernameUser,
+      password,
+      role: "user",
+    });
+
+    userId = userSignupResponse.data.userId;
+
+    const userSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
+      usernameUser,
+      password,
+    });
+
+    const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
+
+    if (setCookieHeader2 && setCookieHeader2.length > 0) {
+      userCookie = setCookieHeader2[0]!;
+      userToken = userCookie.split(";")[0]?.split("=")[1]!;
+    }
+
+    const element1 = await axios.post(
+      `${HTTP_URL}/api/v1/admin/element`,
+      {
+        imageUrl:
+          "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
+        width: 1,
+        height: 1,
+        static: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
+      },
+      {
+        headers: {
+          Cookie: adminCookie!,
+        },
+      },
+    );
+
+    const element2 = await axios.post(
+      `${HTTP_URL}/api/v1/admin/element`,
+      {
+        imageUrl:
+          "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
+        width: 1,
+        height: 1,
+        static: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
+      },
+      {
+        headers: {
+          Cookie: adminCookie!,
+        },
+      },
+    );
+    element1Id = element1.data.id;
+    element2Id = element2.data.id;
+
+    const map = await axios.post(
+      `${HTTP_URL}/api/v1/admin/map`,
+      {
+        thumbnail: "https://thumbnail.com/a.png",
+        dimensions: "100x200",
+        name: "100 person interview room",
+        defaultElements: [
+          {
+            elementId: element1Id,
+            x: 20,
+            y: 20,
+          },
+          {
+            elementId: element1Id,
+            x: 18,
+            y: 20,
+          },
+          {
+            elementId: element2Id,
+            x: 19,
+            y: 20,
+          },
+        ],
+      },
+      {
+        headers: {
+          Cookie: adminCookie!,
+        },
+      },
+    );
+    mapId = map.data.mapId;
+
+    const space = await axios.post(
+      `${HTTP_URL}/api/v1/space`,
+      {
+        name: "Test",
+        dimensions: "100x200",
+        mapId: mapId,
+      },
+      {
+        headers: {
+          Cookie: userCookie!,
+        },
+      },
+    );
+    spaceId = space.data.spaceId;
+  }
+
+  async function setupWs() {
+    ws1 = new WebSocket(WS_URL);
+
+    await new Promise((resolve) => {
+      ws1.onopen = resolve;
+    });
+
+    ws1.onmessage = (event) => {
+      ws1Messages.push(JSON.parse(event.data));
+    };
+
+    ws2 = new WebSocket(WS_URL);
+
+    await new Promise((resolve) => {
+      ws2.onopen = resolve;
+    });
+
+    ws2.onmessage = (event) => {
+      ws2Messages.push(JSON.parse(event.data));
+    };
+  }
+
+  beforeAll(async () => {
+    setupHTTP();
+    setupWs();
+  });
+
+  test("Get back ack for joining the space", async () => {
+    ws1.send(
+      JSON.stringify({
+        type: "join",
+        payload: {
+          spaceId: spaceId,
+          token: adminToken,
+        },
+      }),
+    );
+    
+    const message1 = await waitForAndPopLatestMessage(ws1Messages);
+    
+    ws2.send(
+      JSON.stringify({
+        type: "join",
+        payload: {
+          spaceId: spaceId,
+          token: userToken,
+        },
+      }),
+    );
+
+    const message2 = await waitForAndPopLatestMessage(ws2Messages);
+    const message3 = await waitForAndPopLatestMessage(ws1Messages)
+
+    expect(message1.type).toBe("space-joined");
+    expect(message2.type).toBe("space-joined");
+
+    expect(message1.payload.users.length).toBe(0);
+    expect(message2.payload.users.length).toBe(1)
+    expect(message3.type).toBe("user-join")
+    expect(message3.payload.x).toBe(message2.payload.spawn.x)
+    expect(message3.payload.y).toBe(message2.payload.spawn.y)
+    expect(message3.payload.userId).toBe(userId)
+
+    adminX = message1.payload.spawn.x;
+    adminY = message1.payload.spawn.y;
+
+    userX = message1.payload.spawn.x;
+    userY = message1.payload.spawn.y;
+  });
+
+  test("User should not be able to move across the boundary of the wall", async () => {
+    ws1.send(
+      JSON.stringify({
+        type: "movement",
+        payload: {
+          x: 1000000,
+          y: 500000,
+        },
+      }),
+    );
+
+    const message = await waitForAndPopLatestMessage(ws1Messages);
+
+    expect(message.type).toBe("movement-rejected");
+    expect(message.payload.x).toBe(adminX);
+    expect(message.payload.y).toBe(adminY);
+  });
+
+  test("User should not be able to move two blocks at the same time", async () => {
+    ws1.send(
+      JSON.stringify({
+        type: "movement",
+        payload: {
+          x: adminX + 2,
+          y: adminY,
+        },
+      }),
+    );
+
+    const message = await waitForAndPopLatestMessage(ws1Messages);
+
+    expect(message.type).toBe("movement-rejected");
+    expect(message.payload.x).toBe(adminX);
+    expect(message.payload.y).toBe(adminY);
+  });
+
+  test("Correct movement should be broadcasted to the other sockets in the room", async () => {
+    ws1.send(
+      JSON.stringify({
+        type: "movement",
+        payload: {
+          x: adminX + 1,
+          y: adminY,
+          userId: adminId,
+        },
+      }),
+    );
+
+    const message = await waitForAndPopLatestMessage(ws2Messages);
+
+    expect(message.type).toBe("movement");
+    expect(message.payload.x).toBe(adminX + 1);
+    expect(message.payload.y).toBe(adminY);
+  });
+
+  test("If a user leaves the other user receives a leave event", async () => {
+    ws1.close();
+
+    const message = await waitForAndPopLatestMessage(ws2Messages);
+
+    expect(message.type).toBe("user-left");
+    expect(message.payload.userId).toBe(adminId);
   });
 });
