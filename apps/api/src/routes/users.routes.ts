@@ -4,7 +4,8 @@ import {
   getAllAvatars,
   getUsersMetadata,
   updateUserMetadata,
-} from "../controllers/auth/users.controller.js";
+} from "../controllers/users.controller.js";
+
 const router: Router = Router();
 
 router.get("/avatars", getAllAvatars);

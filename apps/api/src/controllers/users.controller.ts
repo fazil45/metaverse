@@ -1,6 +1,6 @@
 import { UpdateUserMetadata } from "@repo/zodschema";
 import { Request, Response } from "express";
-import { errorHandler } from "../../utils/ErrorHandler.js";
+import { errorHandler } from "../utils/ErrorHandler.js";
 import { prisma } from "@repo/db";
 
 export const updateUserMetadata = async (req: Request, res: Response) => {

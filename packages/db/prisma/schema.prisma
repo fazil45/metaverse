@@ -31,7 +31,7 @@ model Space {
   id        String          @id @unique @default(cuid())
   name      String
   width     Int
-  height    Int?
+  height    Int
   thumbnail String?
   creatorId String
   creator   User            @relation(fields: [creatorId], references: [id])
@@ -62,7 +62,7 @@ model Map {
   width    Int
   height   Int
   name     String
-  elements MapElements[]
+  mapElements MapElements[]
 }
 
 model MapElements {
