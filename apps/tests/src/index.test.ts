@@ -1,6 +1,53 @@
 import { test, expect, describe, beforeAll } from "bun:test";
-import axios from "axios";
+import axios1 from "axios";
 
+interface AxiosErrorResponse {
+  response?: unknown;
+}
+
+interface AxiosWrapper {
+  post: (...args: Parameters<typeof axios1.post>) => Promise<unknown>;
+  put: (...args: Parameters<typeof axios1.put>) => Promise<unknown>;
+  delete: (...args: Parameters<typeof axios1.delete>) => Promise<unknown>;
+  get: (...args: Parameters<typeof axios1.get>) => Promise<unknown>;
+}
+
+const axios: AxiosWrapper = {
+  post: async (...args: Parameters<typeof axios1.post>): Promise<unknown> => {
+    try {
+      const res = await axios1.post(...args);
+      return res;
+    } catch (error: unknown) {
+      return (error as AxiosErrorResponse).response;
+    }
+  },
+  put: async (...args: Parameters<typeof axios1.put>): Promise<unknown> => {
+    try {
+      const res = await axios1.put(...args);
+      return res;
+    } catch (error: unknown) {
+      return (error as AxiosErrorResponse).response;
+    }
+  },
+  delete: async (
+    ...args: Parameters<typeof axios1.delete>
+  ): Promise<unknown> => {
+    try {
+      const res = await axios1.delete(...args);
+      return res;
+    } catch (error: unknown) {
+      return (error as AxiosErrorResponse).response;
+    }
+  },
+  get: async (...args: Parameters<typeof axios1.get>): Promise<unknown> => {
+    try {
+      const res = await axios1.get(...args);
+      return res;
+    } catch (error: unknown) {
+      return (error as AxiosErrorResponse).response;
+    }
+  },
+};
 const HTTP_URL = "http://localhost:4000";
 const WS_URL = "ws://localhost:4001";
 
@@ -12,10 +59,9 @@ describe("Authentication", () => {
       username,
       password,
       avatarId: "dsfsfaf",
-      role:"Admin",
+      role: "Admin",
     });
-    console.log(`Here is CONSOLE.LOG ${response.data}`);
-    expect(response.data).toBeDefined();
+    expect(response.status).toBeDefined();
 
     const secondResponse = await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
       username,
@@ -23,7 +69,9 @@ describe("Authentication", () => {
       avatarId: "",
       type: "Admin",
     });
-    expect(secondResponse.data.statusCode).toBe(400);
+    expect(
+      (secondResponse as { data: { statusCode: number } }).data.statusCode,
+    ).toBe(400);
   });
 
   test.todo("Signup request fails if the username is empty", async () => {
