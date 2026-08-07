@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import { SignInSchema, SignUpSchema } from "@repo/zodschema";
 import { Prisma, prisma, Role } from "@repo/db";
 import { JWT_SECRET } from "../../utils/imports.js";
+import { CookieOption } from "../../utils/cookie-options.js";
+import { errorHandler } from "../../utils/ErrorHandler.js";
 
 export const signup = async (req: Request, res: Response) => {
   try {
@@ -46,67 +48,7 @@ export const signup = async (req: Request, res: Response) => {
       .status(201)
       .json({ success: true, message: "User created successfully" });
   } catch (error) {
-    console.error(error);
-
-    // Prisma-specific known errors (constraint violations, FK errors, etc.)
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      // Unique constraint violation (race condition: two signups at once)
-      if (error.code === "P2002") {
-        return res.status(409).json({
-          success: false,
-          errorMessage: `Username already taken`,
-        });
-      }
-
-      // Foreign key constraint failure (e.g. invalid avatarId)
-      if (error.code === "P2003") {
-        return res.status(400).json({
-          success: false,
-          errorMessage: "Invalid reference — avatarId does not exist",
-        });
-      }
-
-      // Fallback for other known Prisma errors
-      return res.status(400).json({
-        success: false,
-        error: "Database request error",
-        errorMessage: "Server error",
-        code: error.code,
-      });
-    }
-
-    // Malformed query itself (bug in your Prisma call, not user input)
-    if (error instanceof Prisma.PrismaClientValidationError) {
-      return res.status(500).json({
-        success: false,
-        errorMessage: "Internal validation error",
-      });
-    }
-
-    // Prisma engine crashed/panicked
-    if (error instanceof Prisma.PrismaClientRustPanicError) {
-      return res.status(500).json({
-        success: false,
-        error: "Database engine error",
-        errorMessage: "Server error",
-      });
-    }
-
-    // Prisma couldn't connect to the DB at all
-    if (error instanceof Prisma.PrismaClientInitializationError) {
-      return res.status(503).json({
-        success: false,
-        error: "Database unavailable",
-        errorMessage: "Server error",
-      });
-    }
-
-    // bcrypt or anything else unexpected
-    return res.status(500).json({
-      success: false,
-      error: "Internal server error",
-      errorMessage: "Server error",
-    });
+    errorHandler({ error, res });
   }
 };
 
@@ -149,15 +91,46 @@ export const signin = async (req: Request, res: Response) => {
       },
       JWT_SECRET,
     );
-  } catch (error) {}
+
+    res.status(200).cookie("Cookie", token, CookieOption).json({
+      success: true,
+      message: "Signin successfully",
+    });
+  } catch (error) {
+    errorHandler({ error, res });
+  }
 };
 
 export const me = async (req: Request, res: Response) => {
   try {
-  } catch (error) {}
+    const user = await prisma.user.findUnique({
+      where: {
+        id: req.userId,
+      },
+      select: {
+        id: true,
+        avatarId: true,
+        role: true,
+        username: true,
+      },
+    });
+
+    res.status(200).json({ success: true, user: user });
+  } catch (error) {
+    console.error(error)
+    errorHandler({ error, res });
+  }
 };
 
 export const signout = async (req: Request, res: Response) => {
   try {
-  } catch (error) {}
+    res
+      .clearCookie("Cookie")
+      .json({ success: true, message: "Signout successfully" });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      errorMessage: "Server error",
+    });
+  }
 };
