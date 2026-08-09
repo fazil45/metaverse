@@ -3,9 +3,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { SignInSchema, SignUpSchema } from "@repo/zodschema";
 import { Prisma, prisma, Role } from "@repo/db";
-import { JWT_SECRET } from "../../utils/imports.js";
-import { CookieOption } from "../../utils/cookie-options.js";
-import { errorHandler } from "../../utils/ErrorHandler.js";
+import { JWT_SECRET } from "../utils/imports.js";
+import { CookieOption } from "../utils/cookie-options.js";
+import { errorHandler } from "../utils/ErrorHandler.js";
 
 export const signup = async (req: Request, res: Response) => {
   try {

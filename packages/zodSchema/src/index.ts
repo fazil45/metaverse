@@ -13,8 +13,8 @@ export const SignInSchema = z.object({
 });
 
 export const UpdateUserMetadata = z.object({
-  avatarId:z.string()
-})
+  avatarId: z.string(),
+});
 
 export const CreateSpaceSchema = z.object({
   name: z.string(),
@@ -29,11 +29,15 @@ export const AddElementSchema = z.object({
   y: z.number(),
 });
 
-export const createElementSchema = z.object({
+export const DeleteElementSchema = z.object({
+  id: z.string(),
+});
+
+export const CreateElementSchema = z.object({
   imageUrl: z.string(),
-  width: z.string(),
-  height: z.string(),
-  static: true,
+  width: z.number(),
+  height: z.number(),
+  static: z.boolean(),
 });
 
 export const UpdateElementSchema = z.object({
@@ -46,6 +50,7 @@ export const CreateAvatarSchema = z.object({
 });
 
 export const CreateMapSchema = z.object({
+  name: z.string(),
   thumbnail: z.string(),
   dimensions: z.string().regex(/^[0-9]{1,4}x[0-9]{1,4}$/),
   defaultElements: z.array(
@@ -55,4 +60,12 @@ export const CreateMapSchema = z.object({
       y: z.number(),
     }),
   ),
+});
+
+export const SpaceIdParamsSchema = z.object({
+  spaceId: z.string(),
+});
+
+export const ElementIdParamsSchema = z.object({
+  elementId: z.string(),
 });
