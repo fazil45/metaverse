@@ -47,7 +47,16 @@ export const signup = async (req: Request, res: Response) => {
 
     res
       .status(201)
-      .json({ success: true, message: "User created successfully" });
+      .json({
+        success: true,
+        message: "User created successfully",
+        user: {
+          id: user.id,
+          username: user.username,
+          avatarId: user.avatarId,
+          role: user.role,
+        },
+      });
   } catch (error) {
     errorHandler({ error, res });
   }

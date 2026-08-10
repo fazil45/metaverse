@@ -26,8 +26,8 @@ export const createSpace = async (req: Request, res: Response) => {
       const space = await prisma.space.create({
         data: {
           name,
-          width: Number(dimensions.split("x")[0]),
-          height: Number(dimensions.split("y")[1]),
+          width: parseInt(dimensions.split("x")[0]!),
+          height: parseInt(dimensions.split("y")[1]!),
           creatorId: req.userId,
         },
       });

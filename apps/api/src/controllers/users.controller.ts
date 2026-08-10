@@ -69,13 +69,11 @@ export const getAllElements = async (req: Request, res: Response) => {
     errorHandler({ error, res });
   }
 };
+
 export const getUsersMetadata = async (req: Request, res: Response) => {
   try {
     const userIdAsString = (req.query.ids ?? "[]") as string;
-    const userIds = userIdAsString
-      .slice(1, userIdAsString.length - 2)
-      .split(",");
-
+    const userIds = userIdAsString.slice(1, -1).split(",").filter(Boolean);
     const metadata = await prisma.user.findMany({
       where: {
         id: {
@@ -91,8 +89,8 @@ export const getUsersMetadata = async (req: Request, res: Response) => {
     res.json({
       success: true,
       avatars: metadata.map((m) => ({
-        userId: m.id,
-        avatarId: m.avatar?.imageUrl,
+        userId: m?.id,
+        imageUrl: m.avatar?.imageUrl,
         name: m.avatar?.name,
       })),
     });

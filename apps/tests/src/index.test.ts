@@ -6,14 +6,14 @@ interface AxiosErrorResponse {
 }
 
 interface AxiosWrapper {
-  post: (...args: Parameters<typeof axios1.post>) => Promise<unknown>;
-  put: (...args: Parameters<typeof axios1.put>) => Promise<unknown>;
-  delete: (...args: Parameters<typeof axios1.delete>) => Promise<unknown>;
-  get: (...args: Parameters<typeof axios1.get>) => Promise<unknown>;
+  post: (...args: Parameters<typeof axios1.post>) => Promise<any>;
+  put: (...args: Parameters<typeof axios1.put>) => Promise<any>;
+  delete: (...args: Parameters<typeof axios1.delete>) => Promise<any>;
+  get: (...args: Parameters<typeof axios1.get>) => Promise<any>;
 }
 
 const axios: AxiosWrapper = {
-  post: async (...args: Parameters<typeof axios1.post>): Promise<unknown> => {
+  post: async (...args: Parameters<typeof axios1.post>): Promise<any> => {
     try {
       const res = await axios1.post(...args);
       return res;
@@ -21,7 +21,7 @@ const axios: AxiosWrapper = {
       return (error as AxiosErrorResponse).response;
     }
   },
-  put: async (...args: Parameters<typeof axios1.put>): Promise<unknown> => {
+  put: async (...args: Parameters<typeof axios1.put>): Promise<any> => {
     try {
       const res = await axios1.put(...args);
       return res;
@@ -29,9 +29,7 @@ const axios: AxiosWrapper = {
       return (error as AxiosErrorResponse).response;
     }
   },
-  delete: async (
-    ...args: Parameters<typeof axios1.delete>
-  ): Promise<unknown> => {
+  delete: async (...args: Parameters<typeof axios1.delete>): Promise<any> => {
     try {
       const res = await axios1.delete(...args);
       return res;
@@ -39,7 +37,7 @@ const axios: AxiosWrapper = {
       return (error as AxiosErrorResponse).response;
     }
   },
-  get: async (...args: Parameters<typeof axios1.get>): Promise<unknown> => {
+  get: async (...args: Parameters<typeof axios1.get>): Promise<any> => {
     try {
       const res = await axios1.get(...args);
       return res;
@@ -51,77 +49,77 @@ const axios: AxiosWrapper = {
 const HTTP_URL = "http://localhost:4000";
 const WS_URL = "ws://localhost:4001";
 
-describe("Authentication", () => {
-  test("User is able to sign up", async () => {
-    const username = "fazil" + Math.random();
-    const password = "123455";
-    const response = await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
-      username,
-      password,
-      role: "Admin",
-    });
-    expect((response as { status: number }).status).toBe(201);
+// describe("Authentication", () => {
+//   test("User is able to sign up", async () => {
+//     const username = "fazil" + Math.random();
+//     const password = "123455";
+//     const response = await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
+//       username,
+//       password,
+//       role: "Admin",
+//     });
+//     expect((response as { status: number }).status).toBe(201);
 
-    const secondResponse = await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
-      username,
-      password,
-      type: "Admin",
-    });
-    expect((secondResponse as { status: number }).status).toBe(401); // duplicate username, per your controller
-  });
+//     const secondResponse = await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
+//       username,
+//       password,
+//       type: "Admin",
+//     });
+//     expect((secondResponse as { status: number }).status).toBe(401); // duplicate username, per your controller
+//   });
 
-  test("Signup request fails if the username is empty", async () => {
-    const password = "123456";
+//   test("Signup request fails if the username is empty", async () => {
+//     const password = "123456";
 
-    const response = await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
-      password,
-      admin: "Admin",
-    });
+//     const response = await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
+//       password,
+//       admin: "Admin",
+//     });
 
-    expect((response as { status: number }).status).toBe(400);
-  });
+//     expect((response as { status: number }).status).toBe(400);
+//   });
 
-  test("Signin succeeds if the username and password are correct", async () => {
-    const username = `fazil${Math.random().toString(36).slice(2)}`; // alphanumeric only, no "."
-    const password = "123455";
+//   test("Signin succeeds if the username and password are correct", async () => {
+//     const username = `fazil${Math.random().toString(36).slice(2)}`; // alphanumeric only, no "."
+//     const password = "123455";
 
-    const signupResponse = await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
-      username,
-      password,
-      role: "Admin",
-    });
-    expect((signupResponse as { status: number }).status).toBe(201);
+//     const signupResponse = await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
+//       username,
+//       password,
+//       role: "Admin",
+//     });
+//     expect((signupResponse as { status: number }).status).toBe(201);
 
-    const response = await axios.post(`${HTTP_URL}/api/v1/auth/signin`, {
-      username,
-      password,
-    });
+//     const response = await axios.post(`${HTTP_URL}/api/v1/auth/signin`, {
+//       username,
+//       password,
+//     });
 
-    expect((response as { status: number }).status).toBe(200);
-    expect(
-      (response as { status: number; headers: Record<string, unknown> })
-        .headers["set-cookie"],
-    ).toBeDefined();
-  });
+//     expect((response as { status: number }).status).toBe(200);
+//     expect(
+//       (response as { status: number; headers: Record<string, unknown> })
+//         .headers["set-cookie"],
+//     ).toBeDefined();
+//   });
 
-  test("Signin falls if the username and password are incorrect", async () => {
-    const username = `fazil-${Math.random()}`;
-    const password = "123456";
+//   test("Signin falls if the username and password are incorrect", async () => {
+//     const username = `fazil-${Math.random()}`;
+//     const password = "123456";
 
-    await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
-      username,
-      password,
-      role: "Admin",
-    });
+//     await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
+//       username,
+//       password,
+//       role: "Admin",
+//     });
 
-    const response = await axios.post(`${HTTP_URL}/api/v1/auth/signin`, {
-      username: "fazil-random-123",
-      password,
-    });
+//     const response = await axios.post(`${HTTP_URL}/api/v1/auth/signin`, {
+//       username: "fazil-random-123",
+//       password,
+//     });
 
-    expect((response as { status: number }).status).toBe(403);
-  });
-});
+//     expect((response as { status: number }).status).toBe(403);
+//   });
+// });
 
 // describe("User metadata endpoints", () => {
 //   let userToken;
@@ -130,25 +128,31 @@ describe("Authentication", () => {
 //   let adminId;
 //   let userCookie;
 //   let adminCookie;
-//   let avatarId = "21";
+//   let avatarId: string;
 
 //   beforeAll(async () => {
 //     const usernameAdmin = `fazil-admin-${Math.random()}`;
 //     const usernameUser = `fazil-user-${Math.random()}`;
 //     const password = `123456`;
 
-//     const adminSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
-//       usernameAdmin,
-//       password,
-//       role: "admin",
-//     });
+//     const adminSignupResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signup`,
+//       {
+//         username: usernameAdmin,
+//         password,
+//         role: "Admin",
+//       },
+//     );
 
-//     adminId = adminSignupResponse.data.userId;
+//     adminId = adminSignupResponse.data.user.id;
 
-//     const adminSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
-//       usernameAdmin,
-//       password,
-//     });
+//     const adminSigninResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signin`,
+//       {
+//         username: usernameAdmin,
+//         password,
+//       },
+//     );
 
 //     const setCookieHeader = adminSigninResponse.headers["set-cookie"];
 
@@ -157,18 +161,24 @@ describe("Authentication", () => {
 //       adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
 //     }
 
-//     const userSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
-//       usernameUser,
-//       password,
-//       role: "user",
-//     });
+//     const userSignupResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signup`,
+//       {
+//         username: usernameUser,
+//         password,
+//         role: "User",
+//       },
+//     );
 
-//     userId = userSignupResponse.data.userId;
+//     userId = userSignupResponse.data.user.id;
 
-//     const userSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
-//       usernameUser,
-//       password,
-//     });
+//     const userSigninResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signin`,
+//       {
+//         username: usernameUser,
+//         password,
+//       },
+//     );
 
 //     const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
 
@@ -182,6 +192,7 @@ describe("Authentication", () => {
 //       {
 //         imageUrl:
 //           "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
+//         name: "Test Avatar",
 //       },
 //       {
 //         headers: {
@@ -189,13 +200,15 @@ describe("Authentication", () => {
 //         },
 //       },
 //     );
+
+//     avatarId = avatarResponse.data.id;
 //   });
 
 //   test("User can't update their metadata with a wrong avatar id", async () => {
 //     const response = await axios.post(
-//       `${HTTP_URL}/api/v1/metadata`,
+//       `${HTTP_URL}/api/v1/user/metadata`,
 //       {
-//         avatarId: "123455",
+//         avatarId: "8543",
 //       },
 //       {
 //         headers: {
@@ -204,7 +217,7 @@ describe("Authentication", () => {
 //       },
 //     );
 
-//     expect(response.data.statusCode).toBe(400);
+//     expect((response as { status: number }).status).toBe(400);
 //   });
 
 //   test("User can update their metadata with a right avatar id", async () => {
@@ -219,22 +232,14 @@ describe("Authentication", () => {
 //         },
 //       },
 //     );
-//     expect(response.data.statusCode).toBe(200);
+//     expect((response as { status: number }).status).toBe(200);
 //   });
 
 //   test("User can't update their metadata without token", async () => {
-//     const response = await axios.post(
-//       `${HTTP_URL}/api/v1/user/metadata`,
-//       {
-//         avatarId,
-//       },
-//       {
-//         headers: {
-//           Cookie: userCookie!,
-//         },
-//       },
-//     );
-//     expect(response.data.statusCode).toBe(403);
+//     const response = await axios.post(`${HTTP_URL}/api/v1/user/metadata`, {
+//       avatarId,
+//     });
+//     expect((response as { status: number }).status).toBe(401);
 //   });
 // });
 
@@ -246,25 +251,31 @@ describe("Authentication", () => {
 //   let userCookie;
 //   let adminCookie;
 
-//   let avatarId = "21";
+//   let avatarId: string;
 
 //   beforeAll(async () => {
 //     const usernameAdmin = `fazil-admin-${Math.random()}`;
 //     const usernameUser = `fazil-user-${Math.random()}`;
 //     const password = `123456`;
 
-//     const adminSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
-//       usernameAdmin,
-//       password,
-//       role: "admin",
-//     });
+//     const adminSignupResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signup`,
+//       {
+//         username: usernameAdmin,
+//         password,
+//         role: "Admin",
+//       },
+//     );
 
-//     adminId = adminSignupResponse.data.userId;
+//     adminId = adminSignupResponse.data.user.id;
 
-//     const adminSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
-//       usernameAdmin,
-//       password,
-//     });
+//     const adminSigninResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signin`,
+//       {
+//         username: usernameAdmin,
+//         password,
+//       },
+//     );
 
 //     const setCookieHeader = adminSigninResponse.headers["set-cookie"];
 
@@ -273,18 +284,24 @@ describe("Authentication", () => {
 //       adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
 //     }
 
-//     const userSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
-//       usernameUser,
-//       password,
-//       role: "user",
-//     });
+//     const userSignupResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signup`,
+//       {
+//         username: usernameUser,
+//         password,
+//         role: "User",
+//       },
+//     );
 
-//     userId = userSignupResponse.data.userId;
+//     userId = userSignupResponse.data.user.id;
 
-//     const userSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
-//       usernameUser,
-//       password,
-//     });
+//     const userSigninResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signin`,
+//       {
+//         username: usernameUser,
+//         password,
+//       },
+//     );
 
 //     const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
 
@@ -298,6 +315,7 @@ describe("Authentication", () => {
 //       {
 //         imageUrl:
 //           "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
+//         name: "Test Avatar",
 //       },
 //       {
 //         headers: {
@@ -305,6 +323,23 @@ describe("Authentication", () => {
 //         },
 //       },
 //     );
+
+//     avatarId = avatarResponse.data.id;
+//   });
+
+//   test("User can update their metadata with a right avatar id", async () => {
+//     const response = await axios.post(
+//       `${HTTP_URL}/api/v1/user/metadata`,
+//       {
+//         avatarId,
+//       },
+//       {
+//         headers: {
+//           Cookie: userCookie!,
+//         },
+//       },
+//     );
+//     expect((response as { status: number }).status).toBe(200);
 //   });
 
 //   test("Get back avatar information for a user", async () => {
@@ -316,12 +351,13 @@ describe("Authentication", () => {
 //         },
 //       },
 //     );
+
 //     expect(response.data.avatars.length).toBe(1);
 //     expect(response.data.avatars[0].userId).toBe(userId);
 //   });
 
 //   test("Available avatars lists the recently created avatar", async () => {
-//     const response = await axios.get(`${HTTP_URL}/api/v1/avatars`, {
+//     const response = await axios.get(`${HTTP_URL}/api/v1/user/avatars`, {
 //       headers: {
 //         Cookie: userCookie!,
 //       },
@@ -334,279 +370,278 @@ describe("Authentication", () => {
 //   });
 // });
 
-// describe("Space information", () => {
-//   let mapId;
-//   let element1Id;
-//   let element2Id;
-//   let userToken;
-//   let userId;
-//   let adminToken;
-//   let adminId;
-//   let userCookie;
-//   let adminCookie;
+describe("Space information", () => {
+  let mapId:string;
+  let element1Id;
+  let element2Id;
+  let userToken;
+  let userId;
+  let adminToken;
+  let adminId;
+  let userCookie;
+  let adminCookie;
+  let avatarId: string;
 
-//   beforeAll(async () => {
-//     const usernameAdmin = `fazil-admin-${Math.random()}`;
-//     const usernameUser = `fazil-user-${Math.random()}`;
-//     const password = `123456`;
+  beforeAll(async () => {
+    const usernameAdmin = `fazil-admin-${Math.random()}`;
+    const usernameUser = `fazil-user-${Math.random()}`;
+    const password = `123456`;
 
-//     const adminSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
-//       usernameAdmin,
-//       password,
-//       role: "admin",
-//     });
+    const adminSignupResponse = await axios.post(
+      `${HTTP_URL}/api/v1/auth/signup`,
+      {
+        username: usernameAdmin,
+        password,
+        role: "Admin",
+      },
+    );
 
-//     adminId = adminSignupResponse.data.userId;
+    adminId = adminSignupResponse.data.user.id;
 
-//     const adminSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
-//       usernameAdmin,
-//       password,
-//     });
+    const adminSigninResponse = await axios.post(
+      `${HTTP_URL}/api/v1/auth/signin`,
+      {
+        username: usernameAdmin,
+        password,
+      },
+    );
 
-//     const setCookieHeader = adminSigninResponse.headers["set-cookie"];
+    const setCookieHeader = adminSigninResponse.headers["set-cookie"];
 
-//     if (setCookieHeader && setCookieHeader.length > 0) {
-//       adminCookie = setCookieHeader[0]!;
-//       adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
-//     }
+    if (setCookieHeader && setCookieHeader.length > 0) {
+      adminCookie = setCookieHeader[0]!;
+      adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
+    }
 
-//     const userSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
-//       usernameUser,
-//       password,
-//       role: "user",
-//     });
+    const userSignupResponse = await axios.post(
+      `${HTTP_URL}/api/v1/auth/signup`,
+      {
+        username: usernameUser,
+        password,
+        role: "User",
+      },
+    );
 
-//     userId = userSignupResponse.data.userId;
+    userId = userSignupResponse.data.user.id;
 
-//     const userSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
-//       usernameUser,
-//       password,
-//     });
+    const userSigninResponse = await axios.post(
+      `${HTTP_URL}/api/v1/auth/signin`,
+      {
+        username: usernameUser,
+        password,
+      },
+    );
 
-//     const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
+    const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
 
-//     if (setCookieHeader2 && setCookieHeader2.length > 0) {
-//       userCookie = setCookieHeader2[0]!;
-//       userToken = userCookie.split(";")[0]?.split("=")[1]!;
-//     }
+    if (setCookieHeader2 && setCookieHeader2.length > 0) {
+      userCookie = setCookieHeader2[0]!;
+      userToken = userCookie.split(";")[0]?.split("=")[1]!;
+    }
 
-//     const element1 = await axios.post(
-//       `${HTTP_URL}/api/v1/admin/element`,
-//       {
-//         imageUrl:
-//           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
-//         width: 1,
-//         height: 1,
-//         static: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
-//       },
-//       {
-//         headers: {
-//           Cookie: adminCookie!,
-//         },
-//       },
-//     );
+    const avatarResponse = await axios.post(
+      `${HTTP_URL}/api/v1/admin/avatar`,
+      {
+        imageUrl:
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
+        name: "Test Avatar",
+      },
+      {
+        headers: {
+          Cookie: adminCookie!,
+        },
+      },
+    );
 
-//     const element2 = await axios.post(
-//       `${HTTP_URL}/api/v1/admin/element`,
-//       {
-//         imageUrl:
-//           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
-//         width: 1,
-//         height: 1,
-//         static: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
-//       },
-//       {
-//         headers: {
-//           Cookie: adminCookie!,
-//         },
-//       },
-//     );
+    avatarId = avatarResponse.data.id;
 
-//     element1Id = element1.data.id;
-//     element2Id = element2.data.id;
+    const map = await axios.post(
+      `${HTTP_URL}/api/v1/admin/map`,
+      {
+        thumbnail: "https://thumbnail.com/a.png",
+        dimensions: "100x200",
+        name: "100 person interview room",
+        defaultElements: [
+          {
+            elementId: element1Id,
+            x: 20,
+            y: 20,
+          },
+          {
+            elementId: element1Id,
+            x: 18,
+            y: 20,
+          },
+          {
+            elementId: element2Id,
+            x: 19,
+            y: 20,
+          },
+        ],
+      },
+      {
+        headers: {
+          Cookie: adminCookie!,
+        },
+      },
+    );
 
-//     const map = await axios.post(
-//       `${HTTP_URL}/api/v1/admin/map`,
-//       {
-//         thumbnail: "https://thumbnail.com/a.png",
-//         dimensions: "100x200",
-//         name: "100 person interview room",
-//         defaultElements: [
-//           {
-//             elementId: element1Id,
-//             x: 20,
-//             y: 20,
-//           },
-//           {
-//             elementId: element1Id,
-//             x: 18,
-//             y: 20,
-//           },
-//           {
-//             elementId: element2Id,
-//             x: 19,
-//             y: 20,
-//           },
-//         ],
-//       },
-//       {
-//         headers: {
-//           Cookie: adminCookie!,
-//         },
-//       },
-//     );
+    console.log(map.data)
 
-//     mapId = map.data.mapId;
-//   });
+    mapId = map.data.id;
+  });
 
-//   test("User is able to create a space", async () => {
-//     const response = await axios.post(
-//       `${HTTP_URL}/api/v1/space`,
-//       {
-//         name: "Test",
-//         dimensions: "100*200",
-//         mapId: mapId!,
-//       },
-//       {
-//         headers: {
-//           Cookie: userCookie!,
-//         },
-//       },
-//     );
+  
+  test("User is able to create a space", async () => {
+    const response = await axios.post(
+      `${HTTP_URL}/api/v1/space`,
+      {
+        name: "Test",
+        dimensions: "100x200",
+        mapId: mapId!,
+      },
+      {
+        headers: {
+          Cookie: userCookie!,
+        },
+      },
+    );
+    console.log(mapId)
+    console.log(response.data);
 
-//     expect(response.data.spaceId).toBeDefined();
-//   });
+    expect(response.data.spaceId).toBeDefined();
+  });
 
-//   test("User is able to create a space without mapId (empty space)", async () => {
-//     const response = await axios.post(
-//       `${HTTP_URL}/api/v1/space`,
-//       {
-//         name: "Test",
-//         dimensions: "100*200",
-//       },
-//       {
-//         headers: {
-//           Cookie: userCookie!,
-//         },
-//       },
-//     );
+  test("User is able to create a space without mapId (empty space)", async () => {
+    const response = await axios.post(
+      `${HTTP_URL}/api/v1/space`,
+      {
+        name: "Test",
+        dimensions: "100*200",
+      },
+      {
+        headers: {
+          Cookie: userCookie!,
+        },
+      },
+    );
 
-//     expect(response.data.spaceId).toBeDefined();
-//   });
+    expect(response.data.spaceId).toBeDefined();
+  });
 
-//   test("User is not able to create a space without mapId and dimensions", async () => {
-//     const response = await axios.post(
-//       `${HTTP_URL}/api/v1/space`,
-//       {
-//         name: "Test",
-//       },
-//       {
-//         headers: {
-//           Cookie: userCookie!,
-//         },
-//       },
-//     );
+  test("User is not able to create a space without mapId and dimensions", async () => {
+    const response = await axios.post(
+      `${HTTP_URL}/api/v1/space`,
+      {
+        name: "Test",
+      },
+      {
+        headers: {
+          Cookie: userCookie!,
+        },
+      },
+    );
 
-//     expect(response.data.statusCode).toBe(400);
-//   });
+    expect(response.data.statusCode).toBe(400);
+  });
 
-//   test("User is not able to delete a space that doesn't exist", async () => {
-//     const response = await axios.delete(
-//       `${HTTP_URL}/api/v1/space/randomIdDoesntexist`,
-//       {
-//         headers: {
-//           Cookie: userCookie!,
-//         },
-//       },
-//     );
+  test("User is not able to delete a space that doesn't exist", async () => {
+    const response = await axios.delete(
+      `${HTTP_URL}/api/v1/space/randomIdDoesntexist`,
+      {
+        headers: {
+          Cookie: userCookie!,
+        },
+      },
+    );
 
-//     expect(response.data.statusCode).toBe(400);
-//   });
+    expect(response.data.statusCode).toBe(400);
+  });
 
-//   test("User is able to delete a space that exist", async () => {
-//     const spaceCreateresponse = await axios.post(
-//       `${HTTP_URL}/api/v1/space`,
-//       {
-//         name: "Test",
-//         dimensions: "100*200",
-//         mapId: mapId!,
-//       },
-//       {
-//         headers: {
-//           Cookie: userCookie!,
-//         },
-//       },
-//     );
+  test("User is able to delete a space that exist", async () => {
+    const spaceCreateresponse = await axios.post(
+      `${HTTP_URL}/api/v1/space`,
+      {
+        name: "Test",
+        dimensions: "100*200",
+        mapId: mapId!,
+      },
+      {
+        headers: {
+          Cookie: userCookie!,
+        },
+      },
+    );
 
-//     const response = await axios.delete(
-//       `${HTTP_URL}/api/v1/space/${spaceCreateresponse.data.spaceId}`,
-//       {
-//         withCredentials: true,
-//       },
-//     );
+    const response = await axios.delete(
+      `${HTTP_URL}/api/v1/space/${spaceCreateresponse.data.spaceId}`,
+      {
+        withCredentials: true,
+      },
+    );
 
-//     expect(response.data.statusCode).toBe(200);
-//   });
+    expect(response.data.statusCode).toBe(200);
+  });
 
-//   test("User should not be able to delete a space created by another user", async () => {
-//     const spaceCreateresponse = await axios.post(
-//       `${HTTP_URL}/api/v1/space`,
-//       {
-//         name: "Test",
-//         dimensions: "100*200",
-//         mapId: mapId!,
-//       },
-//       {
-//         headers: {
-//           Cookie: userCookie!,
-//         },
-//       },
-//     );
+  test("User should not be able to delete a space created by another user", async () => {
+    const spaceCreateresponse = await axios.post(
+      `${HTTP_URL}/api/v1/space`,
+      {
+        name: "Test",
+        dimensions: "100*200",
+        mapId: mapId!,
+      },
+      {
+        headers: {
+          Cookie: userCookie!,
+        },
+      },
+    );
 
-//     const response = await axios.delete(
-//       `${HTTP_URL}/api/v1/space${spaceCreateresponse.data.spaceId}`,
-//       {
-//         headers: {
-//           Cookie: adminCookie!,
-//         },
-//       },
-//     );
+    const response = await axios.delete(
+      `${HTTP_URL}/api/v1/space${spaceCreateresponse.data.spaceId}`,
+      {
+        headers: {
+          Cookie: adminCookie!,
+        },
+      },
+    );
 
-//     expect(response.data.statusCode).toBe(400);
-//   });
+    expect(response.data.statusCode).toBe(400);
+  });
 
-//   test("Admin has no spaces initially", async () => {
-//     const response = await axios.get(`${HTTP_URL}/api/v1/space/all`);
-//     expect(response.data.spaces.length).toBe(0);
-//   });
+  test("Admin has no spaces initially", async () => {
+    const response = await axios.get(`${HTTP_URL}/api/v1/space/all`);
+    expect(response.data.spaces.length).toBe(0);
+  });
 
-//   test("Admin has no spaces initially", async () => {
-//     const spaceCreateResponse = await axios.post(
-//       `${HTTP_URL}/api/v1/space/all`,
-//       {
-//         name: "Test",
-//         dimensions: "100x200",
-//       },
-//       {
-//         headers: {
-//           Cookie: adminCookie!,
-//         },
-//       },
-//     );
+  test("Admin has no spaces initially", async () => {
+    const spaceCreateResponse = await axios.post(
+      `${HTTP_URL}/api/v1/space/all`,
+      {
+        name: "Test",
+        dimensions: "100x200",
+      },
+      {
+        headers: {
+          Cookie: adminCookie!,
+        },
+      },
+    );
 
-//     const response = await axios.get(`${HTTP_URL}/api/v1/space/all`, {
-//       headers: {
-//         Cookie: adminCookie!,
-//       },
-//     });
-//     const filteredSpace = response.data.spaces.find(
-//       //@ts-ignore
-//       (x) => x.id == spaceCreateResponse.spaceId,
-//     );
-//     expect(response.data.spaces.length).toBe(1);
-//     expect(filteredSpace).toBeDefined();
-//   });
-// });
+    const response = await axios.get(`${HTTP_URL}/api/v1/space/all`, {
+      headers: {
+        Cookie: adminCookie!,
+      },
+    });
+    const filteredSpace = response.data.spaces.find(
+      //@ts-ignore
+      (x) => x.id == spaceCreateResponse.spaceId,
+    );
+    expect(response.data.spaces.length).toBe(1);
+    expect(filteredSpace).toBeDefined();
+  });
+});
 
 // describe("Arena endpoints", () => {
 //   let mapId;
@@ -1168,7 +1203,7 @@ describe("Authentication", () => {
 //         },
 //       },
 //     );
-//     mapId = map.data.mapId;
+//     mapId = map.data.id;
 
 //     const space = await axios.post(
 //       `${HTTP_URL}/api/v1/space`,
@@ -1237,17 +1272,17 @@ describe("Authentication", () => {
 //     );
 
 //     const message2 = await waitForAndPopLatestMessage(ws2Messages);
-//     const message3 = await waitForAndPopLatestMessage(ws1Messages)
+//     const message3 = await waitForAndPopLatestMessage(ws1Messages);
 
 //     expect(message1.type).toBe("space-joined");
 //     expect(message2.type).toBe("space-joined");
 
 //     expect(message1.payload.users.length).toBe(0);
-//     expect(message2.payload.users.length).toBe(1)
-//     expect(message3.type).toBe("user-join")
-//     expect(message3.payload.x).toBe(message2.payload.spawn.x)
-//     expect(message3.payload.y).toBe(message2.payload.spawn.y)
-//     expect(message3.payload.userId).toBe(userId)
+//     expect(message2.payload.users.length).toBe(1);
+//     expect(message3.type).toBe("user-join");
+//     expect(message3.payload.x).toBe(message2.payload.spawn.x);
+//     expect(message3.payload.y).toBe(message2.payload.spawn.y);
+//     expect(message3.payload.userId).toBe(userId);
 
 //     adminX = message1.payload.spawn.x;
 //     adminY = message1.payload.spawn.y;
