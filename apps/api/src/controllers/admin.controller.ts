@@ -19,14 +19,14 @@ export const createElement = async (req: Request, res: Response) => {
         .json({ success: false, errorMessage: "Invalid inputs" });
     }
 
-    const { height, imageUrl, static, width } = parsedCreateElementData.data;
+    const { height, imageUrl, position, width } = parsedCreateElementData.data;
 
     const element = await prisma.element.create({
       data: {
         width: width,
         height: height,
         imageUrl: imageUrl,
-        static: static,
+        position: position,
       },
     });
 

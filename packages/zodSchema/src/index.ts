@@ -3,8 +3,7 @@ import z from "zod";
 export const SignUpSchema = z.object({
   username: z.string().nonempty("Required"),
   password: z.string().nonempty("Required"),
-  avatarId: z.string().nonempty("Required"),
-  role: z.enum(["Admin", "User"]),
+  avatarId: z.string().optional(),
 });
 
 export const SignInSchema = z.object({
@@ -37,7 +36,7 @@ export const CreateElementSchema = z.object({
   imageUrl: z.string(),
   width: z.number(),
   height: z.number(),
-  static: z.boolean(),
+  position: z.boolean(),
 });
 
 export const UpdateElementSchema = z.object({

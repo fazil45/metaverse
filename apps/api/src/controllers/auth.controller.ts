@@ -18,7 +18,7 @@ export const signup = async (req: Request, res: Response) => {
       });
     }
 
-    const { password, username, avatarId, role } = parsedSignUpData.data;
+    const { password, username, avatarId } = parsedSignUpData.data;
 
     const userAlreadyExists = await prisma.user.findUnique({
       where: {
@@ -33,16 +33,17 @@ export const signup = async (req: Request, res: Response) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 15);
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const role = req.body.role as Role;
 
-    const user = await prisma.user.create({
-      data: {
-        username: username,
-        password: hashedPassword,
-        avatarId: avatarId,
-        role: role as Role,
-      },
-    });
+    const createData = {
+      username: username,
+      password: hashedPassword,
+      avatarId: avatarId,
+      role: role,
+    };
+
+    const user = await prisma.user.create({ data: createData });
 
     res
       .status(201)
@@ -72,7 +73,7 @@ export const signin = async (req: Request, res: Response) => {
 
     if (!checkUser) {
       return res
-        .status(404)
+        .status(403)
         .json({ success: false, errorMessage: "User not found" });
     }
 
@@ -117,7 +118,7 @@ export const me = async (req: Request, res: Response) => {
 
     res.status(200).json({ success: true, user: user });
   } catch (error) {
-    console.error(error)
+    console.error(error);
     errorHandler({ error, res });
   }
 };

@@ -11,11 +11,10 @@ import {
 const router: Router = Router();
 
 router.post("/", authMiddleware, createSpace);
-router.post("/:spaceId");
 router.get("/all", authMiddleware, getAllSpaces);
 router.delete("/:spaceId", authMiddleware, deleteSpace);
-router.get("/:spaceId",authMiddleware,getSpace);
+router.get("/:spaceId", authMiddleware, getSpace);
 router.post("/element", authMiddleware, addElementInSpace);
 router.delete("/element", authMiddleware, deleteElementInSpace);
 
-export default router; 
+export default router;

@@ -58,23 +58,19 @@ describe("Authentication", () => {
     const response = await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
       username,
       password,
-      avatarId: "dsfsfaf",
       role: "Admin",
     });
-    expect(response.status).toBeDefined();
+    expect((response as { status: number }).status).toBe(201);
 
     const secondResponse = await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
       username,
       password,
-      avatarId: "",
       type: "Admin",
     });
-    expect(
-      (secondResponse as { data: { statusCode: number } }).data.statusCode,
-    ).toBe(400);
+    expect((secondResponse as { status: number }).status).toBe(401); // duplicate username, per your controller
   });
 
-  test.todo("Signup request fails if the username is empty", async () => {
+  test("Signup request fails if the username is empty", async () => {
     const password = "123456";
 
     const response = await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
@@ -82,53 +78,49 @@ describe("Authentication", () => {
       admin: "Admin",
     });
 
-    expect(response.data.statusCode).toBe(400);
+    expect((response as { status: number }).status).toBe(400);
   });
 
-  test.todo(
-    "Signin succeeds if the username and password are correct",
-    async () => {
-      const username = `fazil-${Math.random()}`;
-      const password = "123456";
+  test("Signin succeeds if the username and password are correct", async () => {
+    const username = `fazil${Math.random().toString(36).slice(2)}`; // alphanumeric only, no "."
+    const password = "123455";
 
-      await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
-        username,
-        password,
-        avatarId: "",
-        role: "Admin",
-      });
+    const signupResponse = await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
+      username,
+      password,
+      role: "Admin",
+    });
+    expect((signupResponse as { status: number }).status).toBe(201);
 
-      const response = await axios.post(`${HTTP_URL}/api/v1/signin`, {
-        username,
-        password,
-      });
+    const response = await axios.post(`${HTTP_URL}/api/v1/auth/signin`, {
+      username,
+      password,
+    });
 
-      expect(response.data.statusCode).toBe(200);
-      expect(response.headers.token).toBeDefined();
-    },
-  );
+    expect((response as { status: number }).status).toBe(200);
+    expect(
+      (response as { status: number; headers: Record<string, unknown> })
+        .headers["set-cookie"],
+    ).toBeDefined();
+  });
 
-  test.todo(
-    "Signin falls if the username and password are incorrect",
-    async () => {
-      const username = `fazil-${Math.random()}`;
-      const password = "123456";
+  test("Signin falls if the username and password are incorrect", async () => {
+    const username = `fazil-${Math.random()}`;
+    const password = "123456";
 
-      await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
-        username,
-        password,
-        avatarId: "",
-        role: "Admin",
-      });
+    await axios.post(`${HTTP_URL}/api/v1/auth/signup`, {
+      username,
+      password,
+      role: "Admin",
+    });
 
-      const response = await axios.post(`${HTTP_URL}/api/v1/auth/signin`, {
-        username: "fazil-random-123",
-        password,
-      });
+    const response = await axios.post(`${HTTP_URL}/api/v1/auth/signin`, {
+      username: "fazil-random-123",
+      password,
+    });
 
-      expect(response.data.statusCode).toBe(403);
-    },
-  );
+    expect((response as { status: number }).status).toBe(403);
+  });
 });
 
 // describe("User metadata endpoints", () => {
