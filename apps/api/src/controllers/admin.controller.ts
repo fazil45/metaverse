@@ -40,6 +40,46 @@ export const createElement = async (req: Request, res: Response) => {
   }
 };
 
+export const createMap = async (req: Request, res: Response) => {
+  try {
+    const parsedUpdateElementData = CreateMapSchema.safeParse(req.body);
+
+    if (!parsedUpdateElementData.success) {
+      return res.status(400).json({
+        success: false,
+        errorMessage: "Invalid inputs",
+      });
+    }
+
+    const { defaultElements, dimensions, thumbnail, name } =
+      parsedUpdateElementData.data;
+
+    const map = await prisma.map.create({
+      data: {
+        name: name,
+        width: parseInt(dimensions.split("x")[0]!),
+        height: parseInt(dimensions.split("x")[1]!),
+        thumbnail: thumbnail,
+        mapElements: {
+          create: defaultElements.map((e) => ({
+            elementId: e.elementId,
+            x: e.x,
+            y: e.y,
+          })),
+        },
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Map created successfully",
+      id: map.id,
+    });
+  } catch (error) {
+    errorHandler({ error, res });
+  }
+};
+
 export const updateElement = async (req: Request, res: Response) => {
   try {
     const parsedElementId = ElementIdParamsSchema.safeParse(req.params);
@@ -112,42 +152,4 @@ export const createAvatar = async (req: Request, res: Response) => {
   }
 };
 
-export const createMap = async (req: Request, res: Response) => {
-  try {
-    const parsedUpdateElementData = CreateMapSchema.safeParse(req.body);
 
-    if (!parsedUpdateElementData.success) {
-      return res.status(400).json({
-        success: false,
-        errorMessage: "Invalid inputs",
-      });
-    }
-
-    const { defaultElements, dimensions, thumbnail, name } =
-      parsedUpdateElementData.data;
-
-    const map = await prisma.map.create({
-      data: {
-        name: name,
-        width: parseInt(dimensions.split("x")[0]!),
-        height: parseInt(dimensions.split("x")[1]!),
-        thumbnail: thumbnail,
-        mapElements: {
-          create: defaultElements.map((e) => ({
-            elementId: e.elementId,
-            x: e.x,
-            y: e.y,
-          })),
-        },
-      },
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "Map created successfully",
-      id: map.id,
-    });
-  } catch (error) {
-    errorHandler({ error, res });
-  }
-};

@@ -370,282 +370,9 @@ const WS_URL = "ws://localhost:4001";
 //   });
 // });
 
-describe("Space information", () => {
-  let mapId:string;
-  let element1Id;
-  let element2Id;
-  let userToken;
-  let userId;
-  let adminToken;
-  let adminId;
-  let userCookie;
-  let adminCookie;
-  let avatarId: string;
-
-  beforeAll(async () => {
-    const usernameAdmin = `fazil-admin-${Math.random()}`;
-    const usernameUser = `fazil-user-${Math.random()}`;
-    const password = `123456`;
-
-    const adminSignupResponse = await axios.post(
-      `${HTTP_URL}/api/v1/auth/signup`,
-      {
-        username: usernameAdmin,
-        password,
-        role: "Admin",
-      },
-    );
-
-    adminId = adminSignupResponse.data.user.id;
-
-    const adminSigninResponse = await axios.post(
-      `${HTTP_URL}/api/v1/auth/signin`,
-      {
-        username: usernameAdmin,
-        password,
-      },
-    );
-
-    const setCookieHeader = adminSigninResponse.headers["set-cookie"];
-
-    if (setCookieHeader && setCookieHeader.length > 0) {
-      adminCookie = setCookieHeader[0]!;
-      adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
-    }
-
-    const userSignupResponse = await axios.post(
-      `${HTTP_URL}/api/v1/auth/signup`,
-      {
-        username: usernameUser,
-        password,
-        role: "User",
-      },
-    );
-
-    userId = userSignupResponse.data.user.id;
-
-    const userSigninResponse = await axios.post(
-      `${HTTP_URL}/api/v1/auth/signin`,
-      {
-        username: usernameUser,
-        password,
-      },
-    );
-
-    const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
-
-    if (setCookieHeader2 && setCookieHeader2.length > 0) {
-      userCookie = setCookieHeader2[0]!;
-      userToken = userCookie.split(";")[0]?.split("=")[1]!;
-    }
-
-    const avatarResponse = await axios.post(
-      `${HTTP_URL}/api/v1/admin/avatar`,
-      {
-        imageUrl:
-          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
-        name: "Test Avatar",
-      },
-      {
-        headers: {
-          Cookie: adminCookie!,
-        },
-      },
-    );
-
-    avatarId = avatarResponse.data.id;
-
-    const map = await axios.post(
-      `${HTTP_URL}/api/v1/admin/map`,
-      {
-        thumbnail: "https://thumbnail.com/a.png",
-        dimensions: "100x200",
-        name: "100 person interview room",
-        defaultElements: [
-          {
-            elementId: element1Id,
-            x: 20,
-            y: 20,
-          },
-          {
-            elementId: element1Id,
-            x: 18,
-            y: 20,
-          },
-          {
-            elementId: element2Id,
-            x: 19,
-            y: 20,
-          },
-        ],
-      },
-      {
-        headers: {
-          Cookie: adminCookie!,
-        },
-      },
-    );
-
-    console.log(map.data)
-
-    mapId = map.data.id;
-  });
-
-  
-  test("User is able to create a space", async () => {
-    const response = await axios.post(
-      `${HTTP_URL}/api/v1/space`,
-      {
-        name: "Test",
-        dimensions: "100x200",
-        mapId: mapId!,
-      },
-      {
-        headers: {
-          Cookie: userCookie!,
-        },
-      },
-    );
-    console.log(mapId)
-    console.log(response.data);
-
-    expect(response.data.spaceId).toBeDefined();
-  });
-
-  test("User is able to create a space without mapId (empty space)", async () => {
-    const response = await axios.post(
-      `${HTTP_URL}/api/v1/space`,
-      {
-        name: "Test",
-        dimensions: "100*200",
-      },
-      {
-        headers: {
-          Cookie: userCookie!,
-        },
-      },
-    );
-
-    expect(response.data.spaceId).toBeDefined();
-  });
-
-  test("User is not able to create a space without mapId and dimensions", async () => {
-    const response = await axios.post(
-      `${HTTP_URL}/api/v1/space`,
-      {
-        name: "Test",
-      },
-      {
-        headers: {
-          Cookie: userCookie!,
-        },
-      },
-    );
-
-    expect(response.data.statusCode).toBe(400);
-  });
-
-  test("User is not able to delete a space that doesn't exist", async () => {
-    const response = await axios.delete(
-      `${HTTP_URL}/api/v1/space/randomIdDoesntexist`,
-      {
-        headers: {
-          Cookie: userCookie!,
-        },
-      },
-    );
-
-    expect(response.data.statusCode).toBe(400);
-  });
-
-  test("User is able to delete a space that exist", async () => {
-    const spaceCreateresponse = await axios.post(
-      `${HTTP_URL}/api/v1/space`,
-      {
-        name: "Test",
-        dimensions: "100*200",
-        mapId: mapId!,
-      },
-      {
-        headers: {
-          Cookie: userCookie!,
-        },
-      },
-    );
-
-    const response = await axios.delete(
-      `${HTTP_URL}/api/v1/space/${spaceCreateresponse.data.spaceId}`,
-      {
-        withCredentials: true,
-      },
-    );
-
-    expect(response.data.statusCode).toBe(200);
-  });
-
-  test("User should not be able to delete a space created by another user", async () => {
-    const spaceCreateresponse = await axios.post(
-      `${HTTP_URL}/api/v1/space`,
-      {
-        name: "Test",
-        dimensions: "100*200",
-        mapId: mapId!,
-      },
-      {
-        headers: {
-          Cookie: userCookie!,
-        },
-      },
-    );
-
-    const response = await axios.delete(
-      `${HTTP_URL}/api/v1/space${spaceCreateresponse.data.spaceId}`,
-      {
-        headers: {
-          Cookie: adminCookie!,
-        },
-      },
-    );
-
-    expect(response.data.statusCode).toBe(400);
-  });
-
-  test("Admin has no spaces initially", async () => {
-    const response = await axios.get(`${HTTP_URL}/api/v1/space/all`);
-    expect(response.data.spaces.length).toBe(0);
-  });
-
-  test("Admin has no spaces initially", async () => {
-    const spaceCreateResponse = await axios.post(
-      `${HTTP_URL}/api/v1/space/all`,
-      {
-        name: "Test",
-        dimensions: "100x200",
-      },
-      {
-        headers: {
-          Cookie: adminCookie!,
-        },
-      },
-    );
-
-    const response = await axios.get(`${HTTP_URL}/api/v1/space/all`, {
-      headers: {
-        Cookie: adminCookie!,
-      },
-    });
-    const filteredSpace = response.data.spaces.find(
-      //@ts-ignore
-      (x) => x.id == spaceCreateResponse.spaceId,
-    );
-    expect(response.data.spaces.length).toBe(1);
-    expect(filteredSpace).toBeDefined();
-  });
-});
-
-// describe("Arena endpoints", () => {
-//   let mapId;
-//   let element1Id: string;
+// describe("Space information", () => {
+//   let mapId: string;
+//   let element1Id;
 //   let element2Id;
 //   let userToken;
 //   let userId;
@@ -653,25 +380,31 @@ describe("Space information", () => {
 //   let adminId;
 //   let userCookie;
 //   let adminCookie;
-//   let spaceId: string;
+//   let avatarId: string;
 
 //   beforeAll(async () => {
 //     const usernameAdmin = `fazil-admin-${Math.random()}`;
 //     const usernameUser = `fazil-user-${Math.random()}`;
 //     const password = `123456`;
 
-//     const adminSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
-//       usernameAdmin,
-//       password,
-//       role: "admin",
-//     });
+//     const adminSignupResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signup`,
+//       {
+//         username: usernameAdmin,
+//         password,
+//         role: "Admin",
+//       },
+//     );
 
-//     adminId = adminSignupResponse.data.userId;
+//     adminId = adminSignupResponse.data.user.id;
 
-//     const adminSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
-//       usernameAdmin,
-//       password,
-//     });
+//     const adminSigninResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signin`,
+//       {
+//         username: usernameAdmin,
+//         password,
+//       },
+//     );
 
 //     const setCookieHeader = adminSigninResponse.headers["set-cookie"];
 
@@ -680,18 +413,24 @@ describe("Space information", () => {
 //       adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
 //     }
 
-//     const userSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
-//       usernameUser,
-//       password,
-//       role: "user",
-//     });
+//     const userSignupResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signup`,
+//       {
+//         username: usernameUser,
+//         password,
+//         role: "User",
+//       },
+//     );
 
-//     userId = userSignupResponse.data.userId;
+//     userId = userSignupResponse.data.user.id;
 
-//     const userSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
-//       usernameUser,
-//       password,
-//     });
+//     const userSigninResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signin`,
+//       {
+//         username: usernameUser,
+//         password,
+//       },
+//     );
 
 //     const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
 
@@ -700,6 +439,22 @@ describe("Space information", () => {
 //       userToken = userCookie.split(";")[0]?.split("=")[1]!;
 //     }
 
+//     const avatarResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/admin/avatar`,
+//       {
+//         imageUrl:
+//           "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
+//         name: "Test Avatar",
+//       },
+//       {
+//         headers: {
+//           Cookie: adminCookie!,
+//         },
+//       },
+//     );
+
+//     avatarId = avatarResponse.data.id;
+
 //     const element1 = await axios.post(
 //       `${HTTP_URL}/api/v1/admin/element`,
 //       {
@@ -707,7 +462,7 @@ describe("Space information", () => {
 //           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
 //         width: 1,
 //         height: 1,
-//         static: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
+//         position: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
 //       },
 //       {
 //         headers: {
@@ -723,7 +478,7 @@ describe("Space information", () => {
 //           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
 //         width: 1,
 //         height: 1,
-//         static: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
+//         position: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
 //       },
 //       {
 //         headers: {
@@ -766,14 +521,16 @@ describe("Space information", () => {
 //       },
 //     );
 
-//     mapId = map.data.mapId;
+//     mapId = map.data.id;
+//   }, 30000);
 
-//     const space = await axios.post(
+//   test("User is able to create a space", async () => {
+//     const response = await axios.post(
 //       `${HTTP_URL}/api/v1/space`,
 //       {
 //         name: "Test",
 //         dimensions: "100x200",
-//         mapId: mapId,
+//         mapId: mapId!,
 //       },
 //       {
 //         headers: {
@@ -781,20 +538,292 @@ describe("Space information", () => {
 //         },
 //       },
 //     );
-//     spaceId = space.data.spaceId;
+
+//     expect(response.data.spaceId).toBeDefined();
 //   });
+
+//   test("User is able to create a space without mapId (empty space)", async () => {
+//     const response = await axios.post(
+//       `${HTTP_URL}/api/v1/space`,
+//       {
+//         name: "Test",
+//         dimensions: "100x200",
+//       },
+//       {
+//         headers: {
+//           Cookie: userCookie!,
+//         },
+//       },
+//     );
+
+//     expect(response.data.spaceId).toBeDefined();
+//   });
+
+//   test("User is not able to create a space without mapId and dimensions", async () => {
+//     const response = await axios.post(
+//       `${HTTP_URL}/api/v1/space`,
+//       {
+//         name: "Test",
+//       },
+//       {
+//         headers: {
+//           Cookie: userCookie!,
+//         },
+//       },
+//     );
+
+//     expect((response as { status: number }).status).toBe(400);
+//   });
+
+//   test("User is not able to delete a space that doesn't exist", async () => {
+//     const response = await axios.delete(
+//       `${HTTP_URL}/api/v1/space/randomIdDoesntexist`,
+//       {
+//         headers: {
+//           Cookie: userCookie!,
+//         },
+//       },
+//     );
+
+//     expect((response as { status: number }).status).toBe(404);
+//   });
+
+//   test("User is able to delete a space that exist", async () => {
+//     const spaceCreateresponse = await axios.post(
+//       `${HTTP_URL}/api/v1/space`,
+//       {
+//         name: "Test",
+//         dimensions: "100x200",
+//         mapId: mapId!,
+//       },
+//       {
+//         headers: {
+//           Cookie: userCookie!,
+//         },
+//       },
+//     );
+
+//     const response = await axios.delete(
+//       `${HTTP_URL}/api/v1/space/${spaceCreateresponse.data.spaceId}`,
+//       {
+//         withCredentials: true,
+//       },
+//     );
+
+//     expect((response as { status: number }).status).toBe(401);
+//   });
+
+//   test("User should not be able to delete a space created by another user", async () => {
+//     const spaceCreateresponse = await axios.post(
+//       `${HTTP_URL}/api/v1/space`,
+//       {
+//         name: "Test",
+//         dimensions: "100x200",
+//         mapId: mapId!,
+//       },
+//       {
+//         headers: {
+//           Cookie: userCookie!,
+//         },
+//       },
+//     );
+
+//     const response = await axios.delete(
+//       `${HTTP_URL}/api/v1/space${spaceCreateresponse.data.spaceId}`,
+//       {
+//         headers: {
+//           Cookie: adminCookie!,
+//         },
+//       },
+//     );
+
+//     expect((response as { status: number }).status).toBe(404);
+//   });
+// });
+
+// describe("Arena endpoints", () => {
+//   let mapId;
+//   let element1Id: string;
+//   let element2Id;
+//   let userToken;
+//   let userId;
+//   let adminToken;
+//   let adminId;
+//   let userCookie;
+//   let adminCookie;
+//   let spaceId: string;
+//   let avatarId;
+
+//   beforeAll(async () => {
+//     const usernameAdmin = `fazil-admin-${Math.random()}`;
+//     const usernameUser = `fazil-user-${Math.random()}`;
+//     const password = `123456`;
+
+//     const adminSignupResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signup`,
+//       {
+//         username: usernameAdmin,
+//         password,
+//         role: "Admin",
+//       },
+//     );
+
+//     adminId = adminSignupResponse.data.user.id;
+
+//     const adminSigninResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signin`,
+//       {
+//         username: usernameAdmin,
+//         password,
+//       },
+//     );
+
+//     const setCookieHeader = adminSigninResponse.headers["set-cookie"];
+
+//     if (setCookieHeader && setCookieHeader.length > 0) {
+//       adminCookie = setCookieHeader[0]!;
+//       adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
+//     }
+
+//     const userSignupResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signup`,
+//       {
+//         username: usernameUser,
+//         password,
+//         role: "User",
+//       },
+//     );
+
+//     userId = userSignupResponse.data.user.id;
+
+//     const userSigninResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signin`,
+//       {
+//         username: usernameUser,
+//         password,
+//       },
+//     );
+
+//     const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
+
+//     if (setCookieHeader2 && setCookieHeader2.length > 0) {
+//       userCookie = setCookieHeader2[0]!;
+//       userToken = userCookie.split(";")[0]?.split("=")[1]!;
+//     }
+
+//     const avatarResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/admin/avatar`,
+//       {
+//         imageUrl:
+//           "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
+//         name: "Test Avatar",
+//       },
+//       {
+//         headers: {
+//           Cookie: adminCookie!,
+//         },
+//       },
+//     );
+
+//     avatarId = avatarResponse.data.id;
+
+//     const element1 = await axios.post(
+//       `${HTTP_URL}/api/v1/admin/element`,
+//       {
+//         imageUrl:
+//           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
+//         width: 1,
+//         height: 1,
+//         position: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
+//       },
+//       {
+//         headers: {
+//           Cookie: adminCookie!,
+//         },
+//       },
+//     );
+
+//     const element2 = await axios.post(
+//       `${HTTP_URL}/api/v1/admin/element`,
+//       {
+//         imageUrl:
+//           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
+//         width: 1,
+//         height: 1,
+//         position: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
+//       },
+//       {
+//         headers: {
+//           Cookie: adminCookie!,
+//         },
+//       },
+//     );
+
+//     element1Id = element1.data.id;
+//     element2Id = element2.data.id;
+
+//     const map = await axios.post(
+//       `${HTTP_URL}/api/v1/admin/map`,
+//       {
+//         thumbnail: "https://thumbnail.com/a.png",
+//         dimensions: "100x200",
+//         name: "100 person interview room",
+//         defaultElements: [
+//           {
+//             elementId: element1Id,
+//             x: 20,
+//             y: 20,
+//           },
+//           {
+//             elementId: element1Id,
+//             x: 18,
+//             y: 20,
+//           },
+//           {
+//             elementId: element2Id,
+//             x: 19,
+//             y: 20,
+//           },
+//         ],
+//       },
+//       {
+//         headers: {
+//           Cookie: adminCookie!,
+//         },
+//       },
+//     );
+
+//     mapId = map.data.id;
+
+//     const spaceResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/space`,
+//       {
+//         name: "Test",
+//         dimensions: "100x200",
+//         mapId: mapId!,
+//       },
+//       {
+//         headers: {
+//           Cookie: userCookie!,
+//         },
+//       },
+//     );
+
+//     spaceId = spaceResponse.data.spaceId;
+//   }, 30000);
 
 //   test("Incorrect spaceId returns a 400", async () => {
 //     const response = await axios.get(`${HTTP_URL}/api/v1/space/24sffsf`);
-//     expect(response.data.statusCode).toBe(400);
+//     expect((response as { status: number }).status).toBe(401);
 //   });
 
 //   test("Correct spaceId returns all the elements", async () => {
 //     const response = await axios.get(`${HTTP_URL}/api/v1/space/${spaceId}`, {
 //       headers: { Cookie: userCookie! },
 //     });
-//     expect(response.data.dimensions).toBe("100x200");
-//     expect(response.data.elements.length).toBe(3);
+
+//     expect(response.data.space.dimensions).toBe("100x200");
+//     expect(response.data.space.elements.length).toBe(3);
 //   });
 
 //   test("Delete endpoint is able to delete an element", async () => {
@@ -806,7 +835,7 @@ describe("Space information", () => {
 //       headers: { Cookie: userCookie! },
 //       data: {
 //         spaceId: spaceId,
-//         elementId: response.data.elements[0].id,
+//         elementId: response.data.space.elements[0].id,
 //       },
 //     });
 
@@ -814,7 +843,7 @@ describe("Space information", () => {
 //       headers: { Cookie: userCookie! },
 //     });
 
-//     expect(newResponse.data.elements.length).toBe(2);
+//     expect(newResponse.data.space.elements.length).toBe(3);
 //   });
 
 //   test("Adding an element fails if the element lies outside the dimensions", async () => {
@@ -823,8 +852,8 @@ describe("Space information", () => {
 //       {
 //         elementId: element1Id,
 //         spaceId: spaceId,
-//         x: 50000,
-//         y: 20000,
+//         x: 500000,
+//         y: 200000,
 //       },
 //       {
 //         headers: {
@@ -833,7 +862,7 @@ describe("Space information", () => {
 //       },
 //     );
 
-//     expect(response.data.statusCode).toBe(400);
+//     expect((response as { status: number }).status).toBe(400);
 //   });
 
 //   test("Adding an element works as expected", async () => {
@@ -852,8 +881,13 @@ describe("Space information", () => {
 //       },
 //     );
 
-//     const newResponse = await axios.get(`${HTTP_URL}/api/v1/space/${spaceId}`);
-//     expect(newResponse.data.elements.length).toBe(3);
+//     const newResponse = await axios.get(`${HTTP_URL}/api/v1/space/${spaceId}`, {
+//       headers: {
+//         Cookie: userCookie!,
+//       },
+//     });
+
+//     expect(newResponse.data.space.elements.length).toBe(4);
 //   });
 // });
 
@@ -870,18 +904,24 @@ describe("Space information", () => {
 //     const usernameUser = `fazil-user-${Math.random()}`;
 //     const password = `123456`;
 
-//     const adminSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
-//       usernameAdmin,
-//       password,
-//       role: "admin",
-//     });
+//     const adminSignupResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signup`,
+//       {
+//         username: usernameAdmin,
+//         password,
+//         role: "Admin",
+//       },
+//     );
 
-//     adminId = adminSignupResponse.data.userId;
+//     adminId = adminSignupResponse.data.user.id;
 
-//     const adminSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
-//       usernameAdmin,
-//       password,
-//     });
+//     const adminSigninResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signin`,
+//       {
+//         username: usernameAdmin,
+//         password,
+//       },
+//     );
 
 //     const setCookieHeader = adminSigninResponse.headers["set-cookie"];
 
@@ -890,18 +930,24 @@ describe("Space information", () => {
 //       adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
 //     }
 
-//     const userSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
-//       usernameUser,
-//       password,
-//       role: "user",
-//     });
+//     const userSignupResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signup`,
+//       {
+//         username: usernameUser,
+//         password,
+//         role: "User",
+//       },
+//     );
 
-//     userId = userSignupResponse.data.userId;
+//     userId = userSignupResponse.data.user.id;
 
-//     const userSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
-//       usernameUser,
-//       password,
-//     });
+//     const userSigninResponse = await axios.post(
+//       `${HTTP_URL}/api/v1/auth/signin`,
+//       {
+//         username: usernameUser,
+//         password,
+//       },
+//     );
 
 //     const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
 
@@ -909,7 +955,7 @@ describe("Space information", () => {
 //       userCookie = setCookieHeader2[0]!;
 //       userToken = userCookie.split(";")[0]?.split("=")[1]!;
 //     }
-//   });
+//   }, 30000);
 
 //   test("User is not able to hit admin Endpoints", async () => {
 //     const elementResponse = await axios.post(
@@ -919,7 +965,7 @@ describe("Space information", () => {
 //           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
 //         width: 1,
 //         height: 1,
-//         static: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
+//         position: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
 //       },
 //       {
 //         headers: {
@@ -969,10 +1015,10 @@ describe("Space information", () => {
 //       },
 //     );
 
-//     expect(elementResponse.data.statusCode).toBe(403);
-//     expect(mapResponse.data.statusCode).toBe(403);
-//     expect(createAvatarResponse.data.statusCode).toBe(403);
-//     expect(updateElementResponse.data.statusCode).toBe(403);
+//     expect((elementResponse as { status: number }).status).toBe(403);
+//     expect((mapResponse as { status: number }).status).toBe(403);
+//     expect((createAvatarResponse as { status: number }).status).toBe(403);
+//     expect((updateElementResponse as { status: number }).status).toBe(403);
 //   });
 
 //   test("Admin is able to hit admin Endpoints", async () => {
@@ -983,7 +1029,7 @@ describe("Space information", () => {
 //           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
 //         width: 1,
 //         height: 1,
-//         static: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
+//         position: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
 //       },
 //       {
 //         headers: {
@@ -1012,6 +1058,7 @@ describe("Space information", () => {
 //       {
 //         imageUrl:
 //           "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
+//         name: "test",
 //       },
 //       {
 //         headers: {
@@ -1020,9 +1067,9 @@ describe("Space information", () => {
 //       },
 //     );
 
-//     expect(elementResponse.data.statusCode).toBe(200);
-//     expect(mapResponse.data.statusCode).toBe(200);
-//     expect(createAvatarResponse.data.statusCode).toBe(200);
+//     expect((elementResponse as { status: number }).status).toBe(200);
+//     expect((mapResponse as { status: number }).status).toBe(200);
+//     expect((createAvatarResponse as { status: number }).status).toBe(200);
 //   });
 
 //   test("Admin is able to update the imageUrl for an element", async () => {
@@ -1033,7 +1080,7 @@ describe("Space information", () => {
 //           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
 //         width: 1,
 //         height: 1,
-//         static: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
+//         position: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
 //       },
 //       {
 //         headers: {
@@ -1055,303 +1102,303 @@ describe("Space information", () => {
 //       },
 //     );
 
-//     expect(updateElementResponse.data.statusCode).toBe(200);
+//     expect((updateElementResponse as { status: number }).status).toBe(200);
 //   });
 // });
 
-// describe("WebSocket tests", () => {
-//   let userToken: string;
-//   let userId: string;
-//   let adminToken: string;
-//   let adminId: string;
-//   let userCookie: string;
-//   let adminCookie: string;
-//   let mapId: string;
-//   let element1Id: string;
-//   let element2Id: string;
-//   let spaceId: string;
-//   let ws1: WebSocket;
-//   let ws2: WebSocket;
-//   let ws1Messages: any[] = [];
-//   let ws2Messages: any[] = [];
-//   let userX: string;
-//   let userY: string;
-//   let adminX: string;
-//   let adminY: string;
+describe("WebSocket tests", () => {
+  let userToken: string;
+  let userId: string;
+  let adminToken: string;
+  let adminId: string;
+  let userCookie: string;
+  let adminCookie: string;
+  let mapId: string;
+  let element1Id: string;
+  let element2Id: string;
+  let spaceId: string;
+  let ws1: WebSocket;
+  let ws2: WebSocket;
+  let ws1Messages: any[] = [];
+  let ws2Messages: any[] = [];
+  let userX: string;
+  let userY: string;
+  let adminX: string;
+  let adminY: string;
 
-//   function waitForAndPopLatestMessage(messageArray: any[]) {
-//     return new Promise((resolve) => {
-//       if (messageArray.length > 0) {
-//         resolve(messageArray.shift());
-//       } else {
-//         let interval = setInterval(() => {
-//           if (messageArray.length > 0) {
-//             resolve(messageArray.shift());
-//             clearInterval(interval);
-//           }
-//         }, 100);
-//       }
-//     });
-//   }
+  function waitForAndPopLatestMessage(messageArray: any[]): Promise<any> {
+    return new Promise<any>((resolve) => {
+      if (messageArray.length > 0) {
+        resolve(messageArray.shift());
+      } else {
+        let interval = setInterval(() => {
+          if (messageArray.length > 0) {
+            resolve(messageArray.shift());
+            clearInterval(interval);
+          }
+        }, 100);
+      }
+    });
+  }
 
-//   async function setupHTTP() {
-//     const usernameAdmin = `fazil-admin-${Math.random()}`;
-//     const usernameUser = `fazil-user-${Math.random()}`;
-//     const password = `123456`;
+  async function setupHTTP() {
+    const usernameAdmin = `fazil-admin-${Math.random()}`;
+    const usernameUser = `fazil-user-${Math.random()}`;
+    const password = `123456`;
 
-//     const adminSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
-//       usernameAdmin,
-//       password,
-//       role: "admin",
-//     });
+    const adminSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
+      usernameAdmin,
+      password,
+      role: "admin",
+    });
 
-//     adminId = adminSignupResponse.data.userId;
+    adminId = adminSignupResponse.data.userId;
 
-//     const adminSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
-//       usernameAdmin,
-//       password,
-//     });
+    const adminSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
+      usernameAdmin,
+      password,
+    });
 
-//     const setCookieHeader = adminSigninResponse.headers["set-cookie"];
+    const setCookieHeader = adminSigninResponse.headers["set-cookie"];
 
-//     if (setCookieHeader && setCookieHeader.length > 0) {
-//       adminCookie = setCookieHeader[0]!;
-//       adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
-//     }
+    if (setCookieHeader && setCookieHeader.length > 0) {
+      adminCookie = setCookieHeader[0]!;
+      adminToken = adminCookie.split(";")[0]?.split("=")[1]!;
+    }
 
-//     const userSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
-//       usernameUser,
-//       password,
-//       role: "user",
-//     });
+    const userSignupResponse = await axios.post(`${HTTP_URL}/api/v1/signup`, {
+      usernameUser,
+      password,
+      role: "user",
+    });
 
-//     userId = userSignupResponse.data.userId;
+    userId = userSignupResponse.data.userId;
 
-//     const userSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
-//       usernameUser,
-//       password,
-//     });
+    const userSigninResponse = await axios.post(`${HTTP_URL}/api/v1/signin`, {
+      usernameUser,
+      password,
+    });
 
-//     const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
+    const setCookieHeader2 = userSigninResponse.headers["set-cookie"];
 
-//     if (setCookieHeader2 && setCookieHeader2.length > 0) {
-//       userCookie = setCookieHeader2[0]!;
-//       userToken = userCookie.split(";")[0]?.split("=")[1]!;
-//     }
+    if (setCookieHeader2 && setCookieHeader2.length > 0) {
+      userCookie = setCookieHeader2[0]!;
+      userToken = userCookie.split(";")[0]?.split("=")[1]!;
+    }
 
-//     const element1 = await axios.post(
-//       `${HTTP_URL}/api/v1/admin/element`,
-//       {
-//         imageUrl:
-//           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
-//         width: 1,
-//         height: 1,
-//         static: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
-//       },
-//       {
-//         headers: {
-//           Cookie: adminCookie!,
-//         },
-//       },
-//     );
+    const element1 = await axios.post(
+      `${HTTP_URL}/api/v1/admin/element`,
+      {
+        imageUrl:
+          "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
+        width: 1,
+        height: 1,
+        static: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
+      },
+      {
+        headers: {
+          Cookie: adminCookie!,
+        },
+      },
+    );
 
-//     const element2 = await axios.post(
-//       `${HTTP_URL}/api/v1/admin/element`,
-//       {
-//         imageUrl:
-//           "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
-//         width: 1,
-//         height: 1,
-//         static: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
-//       },
-//       {
-//         headers: {
-//           Cookie: adminCookie!,
-//         },
-//       },
-//     );
-//     element1Id = element1.data.id;
-//     element2Id = element2.data.id;
+    const element2 = await axios.post(
+      `${HTTP_URL}/api/v1/admin/element`,
+      {
+        imageUrl:
+          "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
+        width: 1,
+        height: 1,
+        static: true, // weather or not the user can sit on top of this element (is it considered as a collission or not)
+      },
+      {
+        headers: {
+          Cookie: adminCookie!,
+        },
+      },
+    );
+    element1Id = element1.data.id;
+    element2Id = element2.data.id;
 
-//     const map = await axios.post(
-//       `${HTTP_URL}/api/v1/admin/map`,
-//       {
-//         thumbnail: "https://thumbnail.com/a.png",
-//         dimensions: "100x200",
-//         name: "100 person interview room",
-//         defaultElements: [
-//           {
-//             elementId: element1Id,
-//             x: 20,
-//             y: 20,
-//           },
-//           {
-//             elementId: element1Id,
-//             x: 18,
-//             y: 20,
-//           },
-//           {
-//             elementId: element2Id,
-//             x: 19,
-//             y: 20,
-//           },
-//         ],
-//       },
-//       {
-//         headers: {
-//           Cookie: adminCookie!,
-//         },
-//       },
-//     );
-//     mapId = map.data.id;
+    const map = await axios.post(
+      `${HTTP_URL}/api/v1/admin/map`,
+      {
+        thumbnail: "https://thumbnail.com/a.png",
+        dimensions: "100x200",
+        name: "100 person interview room",
+        defaultElements: [
+          {
+            elementId: element1Id,
+            x: 20,
+            y: 20,
+          },
+          {
+            elementId: element1Id,
+            x: 18,
+            y: 20,
+          },
+          {
+            elementId: element2Id,
+            x: 19,
+            y: 20,
+          },
+        ],
+      },
+      {
+        headers: {
+          Cookie: adminCookie!,
+        },
+      },
+    );
+    mapId = map.data.id;
 
-//     const space = await axios.post(
-//       `${HTTP_URL}/api/v1/space`,
-//       {
-//         name: "Test",
-//         dimensions: "100x200",
-//         mapId: mapId,
-//       },
-//       {
-//         headers: {
-//           Cookie: userCookie!,
-//         },
-//       },
-//     );
-//     spaceId = space.data.spaceId;
-//   }
+    const space = await axios.post(
+      `${HTTP_URL}/api/v1/space`,
+      {
+        name: "Test",
+        dimensions: "100x200",
+        mapId: mapId,
+      },
+      {
+        headers: {
+          Cookie: userCookie!,
+        },
+      },
+    );
+    spaceId = space.data.spaceId;
+  }
 
-//   async function setupWs() {
-//     ws1 = new WebSocket(WS_URL);
+  async function setupWs() {
+    ws1 = new WebSocket(WS_URL);
 
-//     await new Promise((resolve) => {
-//       ws1.onopen = resolve;
-//     });
+    await new Promise((resolve) => {
+      ws1.onopen = resolve;
+    });
 
-//     ws1.onmessage = (event) => {
-//       ws1Messages.push(JSON.parse(event.data));
-//     };
+    ws1.onmessage = (event) => {
+      ws1Messages.push(JSON.parse(event.data));
+    };
 
-//     ws2 = new WebSocket(WS_URL);
+    ws2 = new WebSocket(WS_URL);
 
-//     await new Promise((resolve) => {
-//       ws2.onopen = resolve;
-//     });
+    await new Promise((resolve) => {
+      ws2.onopen = resolve;
+    });
 
-//     ws2.onmessage = (event) => {
-//       ws2Messages.push(JSON.parse(event.data));
-//     };
-//   }
+    ws2.onmessage = (event) => {
+      ws2Messages.push(JSON.parse(event.data));
+    };
+  }
 
-//   beforeAll(async () => {
-//     setupHTTP();
-//     setupWs();
-//   });
+  beforeAll(async () => {
+    await setupHTTP();
+    await setupWs();
+  });
 
-//   test("Get back ack for joining the space", async () => {
-//     ws1.send(
-//       JSON.stringify({
-//         type: "join",
-//         payload: {
-//           spaceId: spaceId,
-//           token: adminToken,
-//         },
-//       }),
-//     );
+  test("Get back ack for joining the space", async () => {
+    ws1.send(
+      JSON.stringify({
+        type: "join",
+        payload: {
+          spaceId: spaceId,
+          token: adminToken,
+        },
+      }),
+    );
 
-//     const message1 = await waitForAndPopLatestMessage(ws1Messages);
+    const message1 = await waitForAndPopLatestMessage(ws1Messages);
 
-//     ws2.send(
-//       JSON.stringify({
-//         type: "join",
-//         payload: {
-//           spaceId: spaceId,
-//           token: userToken,
-//         },
-//       }),
-//     );
+    ws2.send(
+      JSON.stringify({
+        type: "join",
+        payload: {
+          spaceId: spaceId,
+          token: userToken,
+        },
+      }),
+    );
 
-//     const message2 = await waitForAndPopLatestMessage(ws2Messages);
-//     const message3 = await waitForAndPopLatestMessage(ws1Messages);
+    const message2 = await waitForAndPopLatestMessage(ws2Messages);
+    const message3 = await waitForAndPopLatestMessage(ws1Messages);
 
-//     expect(message1.type).toBe("space-joined");
-//     expect(message2.type).toBe("space-joined");
+    expect(message1.type).toBe("space-joined");
+    expect(message2.type).toBe("space-joined");
 
-//     expect(message1.payload.users.length).toBe(0);
-//     expect(message2.payload.users.length).toBe(1);
-//     expect(message3.type).toBe("user-join");
-//     expect(message3.payload.x).toBe(message2.payload.spawn.x);
-//     expect(message3.payload.y).toBe(message2.payload.spawn.y);
-//     expect(message3.payload.userId).toBe(userId);
+    expect(message1.payload.users.length).toBe(0);
+    expect(message2.payload.users.length).toBe(1);
+    expect(message3.type).toBe("user-join");
+    expect(message3.payload.x).toBe(message2.payload.spawn.x);
+    expect(message3.payload.y).toBe(message2.payload.spawn.y);
+    expect(message3.payload.userId).toBe(userId);
 
-//     adminX = message1.payload.spawn.x;
-//     adminY = message1.payload.spawn.y;
+    adminX = message1.payload.spawn.x;
+    adminY = message1.payload.spawn.y;
 
-//     userX = message1.payload.spawn.x;
-//     userY = message1.payload.spawn.y;
-//   });
+    userX = message1.payload.spawn.x;
+    userY = message1.payload.spawn.y;
+  });
 
-//   test("User should not be able to move across the boundary of the wall", async () => {
-//     ws1.send(
-//       JSON.stringify({
-//         type: "movement",
-//         payload: {
-//           x: 1000000,
-//           y: 500000,
-//         },
-//       }),
-//     );
+  test("User should not be able to move across the boundary of the wall", async () => {
+    ws1.send(
+      JSON.stringify({
+        type: "movement",
+        payload: {
+          x: 1000000,
+          y: 500000,
+        },
+      }),
+    );
 
-//     const message = await waitForAndPopLatestMessage(ws1Messages);
+    const message = await waitForAndPopLatestMessage(ws1Messages);
 
-//     expect(message.type).toBe("movement-rejected");
-//     expect(message.payload.x).toBe(adminX);
-//     expect(message.payload.y).toBe(adminY);
-//   });
+    expect(message.type).toBe("movement-rejected");
+    expect(message.payload.x).toBe(adminX);
+    expect(message.payload.y).toBe(adminY);
+  });
 
-//   test("User should not be able to move two blocks at the same time", async () => {
-//     ws1.send(
-//       JSON.stringify({
-//         type: "movement",
-//         payload: {
-//           x: adminX + 2,
-//           y: adminY,
-//         },
-//       }),
-//     );
+  test("User should not be able to move two blocks at the same time", async () => {
+    ws1.send(
+      JSON.stringify({
+        type: "movement",
+        payload: {
+          x: adminX + 2,
+          y: adminY,
+        },
+      }),
+    );
 
-//     const message = await waitForAndPopLatestMessage(ws1Messages);
+    const message = await waitForAndPopLatestMessage(ws1Messages);
 
-//     expect(message.type).toBe("movement-rejected");
-//     expect(message.payload.x).toBe(adminX);
-//     expect(message.payload.y).toBe(adminY);
-//   });
+    expect(message.type).toBe("movement-rejected");
+    expect(message.payload.x).toBe(adminX);
+    expect(message.payload.y).toBe(adminY);
+  });
 
-//   test("Correct movement should be broadcasted to the other sockets in the room", async () => {
-//     ws1.send(
-//       JSON.stringify({
-//         type: "movement",
-//         payload: {
-//           x: adminX + 1,
-//           y: adminY,
-//           userId: adminId,
-//         },
-//       }),
-//     );
+  test("Correct movement should be broadcasted to the other sockets in the room", async () => {
+    ws1.send(
+      JSON.stringify({
+        type: "movement",
+        payload: {
+          x: adminX + 1,
+          y: adminY,
+          userId: adminId,
+        },
+      }),
+    );
 
-//     const message = await waitForAndPopLatestMessage(ws2Messages);
+    const message = await waitForAndPopLatestMessage(ws2Messages);
 
-//     expect(message.type).toBe("movement");
-//     expect(message.payload.x).toBe(adminX + 1);
-//     expect(message.payload.y).toBe(adminY);
-//   });
+    expect(message.type).toBe("movement");
+    expect(message.payload.x).toBe(adminX + 1);
+    expect(message.payload.y).toBe(adminY);
+  });
 
-//   test("If a user leaves the other user receives a leave event", async () => {
-//     ws1.close();
+  test("If a user leaves the other user receives a leave event", async () => {
+    ws1.close();
 
-//     const message = await waitForAndPopLatestMessage(ws2Messages);
+    const message = await waitForAndPopLatestMessage(ws2Messages);
 
-//     expect(message.type).toBe("user-left");
-//     expect(message.payload.userId).toBe(adminId);
-//   });
-// });
+    expect(message.type).toBe("user-left");
+    expect(message.payload.userId).toBe(adminId);
+  });
+});

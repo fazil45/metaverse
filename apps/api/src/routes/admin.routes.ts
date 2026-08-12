@@ -13,7 +13,7 @@ router.use(authMiddleware);
 router.use(adminMiddleware);
 
 router.post("/element", createElement);
-router.post("/element/:elementId", updateElement);
+router.put("/element/:elementId", updateElement);
 router.post("/avatar", createAvatar);
 router.post("/map", createMap);
 

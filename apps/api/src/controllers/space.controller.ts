@@ -27,12 +27,12 @@ export const createSpace = async (req: Request, res: Response) => {
         data: {
           name,
           width: parseInt(dimensions.split("x")[0]!),
-          height: parseInt(dimensions.split("y")[1]!),
+          height: parseInt(dimensions.split("x")[1]!),
           creatorId: req.userId,
         },
       });
 
-      res
+      return res
         .status(200)
         .json({ success: true, message: "Space created", spaceId: space.id });
     }
@@ -133,6 +133,12 @@ export const deleteSpace = async (req: Request, res: Response) => {
 
 export const getAllSpaces = async (req: Request, res: Response) => {
   try {
+    if (!req.userId) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Unauthorized", spaces: [] });
+    }
+
     const spaces = await prisma.space.findMany({
       where: {
         creatorId: req.userId,
@@ -176,10 +182,16 @@ export const addElementInSpace = async (req: Request, res: Response) => {
       },
     });
 
+    
+
     if (!space) {
       return res
         .status(400)
         .json({ success: false, errorMessage: "No space found" });
+    }
+
+    if (x >= space.width && y >= space.height) {
+      return res.status(400).json({success:false, errorMessage:"Element size is too bif"})
     }
 
     await prisma.spaceElements.create({
@@ -239,12 +251,12 @@ export const deleteElementInSpace = async (req: Request, res: Response) => {
 
 export const getSpace = async (req: Request, res: Response) => {
   try {
-    const parsedSpaceId = SpaceIdParamsSchema.safeParse(req.body);
+    const parsedSpaceId = SpaceIdParamsSchema.safeParse(req.params);
 
     if (!parsedSpaceId.success) {
       return res
         .status(400)
-        .json({ success: false, errorMessage: "Invalid inputs" });
+        .json({ success: false, errorMessage: "Invalid id" });
     }
 
     const spaceId = parsedSpaceId.data.spaceId;
