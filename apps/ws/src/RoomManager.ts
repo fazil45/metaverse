@@ -30,7 +30,7 @@ export class RoomManager {
     }
     this.rooms.get(roomId)?.forEach((u) => {
       if (u.id !== user.id) {
-        u.send(JSON.stringify(message));
+        u.send(message);
       }
     });
   }
@@ -41,7 +41,7 @@ export class RoomManager {
     }
     this.rooms.set(
       spaceId,
-      (this.rooms.get(spaceId)?.filter((u) => u.id !== user.id) ?? []),
+      this.rooms.get(spaceId)?.filter((u) => u.id !== user.id) ?? [],
     );
   }
 }
