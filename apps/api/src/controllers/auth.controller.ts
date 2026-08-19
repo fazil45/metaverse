@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { SignInSchema, SignUpSchema } from "@repo/zodschema";
+import { AuthSchema } from "@repo/zodschema";
 import { Prisma, prisma, Role } from "@repo/db";
 import { JWT_SECRET } from "../utils/imports.js";
 import { CookieOption } from "../utils/cookie-options.js";
@@ -9,7 +9,7 @@ import { errorHandler } from "../utils/ErrorHandler.js";
 
 export const signup = async (req: Request, res: Response) => {
   try {
-    const parsedSignUpData = SignUpSchema.safeParse(req.body);
+    const parsedSignUpData = AuthSchema.safeParse(req.body);
 
     if (!parsedSignUpData.success) {
       return res.status(400).json({
@@ -18,7 +18,7 @@ export const signup = async (req: Request, res: Response) => {
       });
     }
 
-    const { password, username, avatarId } = parsedSignUpData.data;
+    const { password, username } = parsedSignUpData.data;
 
     const userAlreadyExists = await prisma.user.findUnique({
       where: {
@@ -39,24 +39,21 @@ export const signup = async (req: Request, res: Response) => {
     const createData = {
       username: username,
       password: hashedPassword,
-      avatarId: avatarId,
-      role: role,
+      role: role ? role : "User",
     };
 
     const user = await prisma.user.create({ data: createData });
 
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "User created successfully",
-        user: {
-          id: user.id,
-          username: user.username,
-          avatarId: user.avatarId,
-          role: user.role,
-        },
-      });
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      user: {
+        id: user.id,
+        username: user.username,
+        avatarId: user.avatarId,
+        role: user.role,
+      },
+    });
   } catch (error) {
     errorHandler({ error, res });
   }
@@ -64,7 +61,7 @@ export const signup = async (req: Request, res: Response) => {
 
 export const signin = async (req: Request, res: Response) => {
   try {
-    const parsedSigninData = SignInSchema.safeParse(req.body);
+    const parsedSigninData = AuthSchema.safeParse(req.body);
 
     if (!parsedSigninData.success) {
       return res

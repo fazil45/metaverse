@@ -13,14 +13,22 @@
   "dependencies": {
     "@repo/ui": "*",
     "@tailwindcss/postcss": "^4.3.3",
+    "@tanstack/react-form": "^1.33.5",
+    "@tanstack/react-form-nextjs": "^1.33.5",
+    "@tanstack/react-query": "^5.101.4",
+    "axios": "^1.19.0",
+    "konva": "^10.3.1",
     "lucide-react": "^1.31.0",
     "next": "16.2.0",
     "postcss": "^8.5.26",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-konva": "^19.2.5",
+    "sonner": "^2.0.8",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
+    "@repo/zodschema": "*",
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
     "@types/node": "^22.15.3",

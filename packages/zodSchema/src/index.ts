@@ -1,12 +1,6 @@
 import z from "zod";
 
-export const SignUpSchema = z.object({
-  username: z.string().nonempty("Required"),
-  password: z.string().nonempty("Required"),
-  avatarId: z.string().optional(),
-});
-
-export const SignInSchema = z.object({
+export const AuthSchema = z.object({
   username: z.string().nonempty("Required"),
   password: z.string().nonempty("Required"),
 });
