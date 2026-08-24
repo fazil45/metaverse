@@ -53,7 +53,7 @@ model Element {
   width       Int
   height      Int
   imageUrl    String
-  position    Boolean
+  collides    Boolean
   spaces      spaceElements[]
   mapsElement MapElements[]
 }
@@ -64,8 +64,11 @@ model Map {
   height      Int
   name        String
   thumbnail   String
+  tilesetImageUrl String
+  tiledJsonUrl    String
   mapElements MapElements[]
 }
+
 
 model MapElements {
   id        String  @id @unique @default(cuid())
