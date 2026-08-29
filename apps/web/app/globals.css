@@ -4,7 +4,7 @@
 
 :root {
   color-scheme: light;
-  --background: #faf9f5;
+  --background: #dbd6c0;
   --foreground: #1f1e1c;
   --card: #ffffff;
   --muted-foreground: #77766f;
@@ -20,7 +20,7 @@
   --foreground: #f2f1ea;
   --card: #211f1b;
   --muted-foreground: #9c9a91;
-  --border: #33322c;
+  --border: #1b1b1b;
 }
 
 @theme inline {

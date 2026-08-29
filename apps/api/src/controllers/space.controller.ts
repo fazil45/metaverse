@@ -226,7 +226,7 @@ export const addElementInSpace = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteElementInSpace = async (req: Request, res: Response) => {
+export const deleteElementInSpace = async (req: Request, res: Response) => {  
   try {
     const parsedDeleteElementData = DeleteElementSchema.safeParse(req.body);
 

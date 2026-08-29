@@ -9,7 +9,7 @@ export default function NavBar() {
   return (
     <nav className="mx-auto flex h-20.5 w-[min(1120px,calc(100%-40px))] items-center justify-between border-b border-border">
       <a
-        href="#top"
+        href="/"
         className="flex items-center gap-2 text-[17px] font-semibold tracking-tighter"
       >
         <span className="grid rotate-45 grid-cols-2 gap-0.5">
