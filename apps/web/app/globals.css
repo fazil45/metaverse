@@ -10,6 +10,8 @@
   --muted-foreground: #77766f;
   --border: #e5e4df;
   --primary: #2563eb;
+  --secondary: #f51d1d;
+  --create: #22C55E;
 }
 
 .dark {
@@ -28,6 +30,8 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-primary: var(--primary);
+  --color-secondary:var(--secondary);
+  --color-create:var(--create);
   --font-sans: var(--font-geist);
   --font-mono: var(--font-geist-mono);
 }

@@ -8,15 +8,28 @@ import {
   updateElement,
 } from "../controllers/admin.controller.js";
 import { uploadMapFiles } from "../controllers/uploadMap.controller.js";
+import multer from "multer";
 const router: Router = Router();
 
 router.use(authMiddleware);
 router.use(adminMiddleware);
 
+const upload = multer({
+  storage: multer.memoryStorage(),
+});
+
+router.post(
+  "/upload",
+  upload.fields([
+    { name: "tileset", maxCount: 1 },
+    { name: "tiledJson", maxCount: 1 },
+  ]),
+  uploadMapFiles,
+);
+
 router.post("/element", createElement);
 router.put("/element/:elementId", updateElement);
 router.post("/avatar", createAvatar);
-router.post("/upload", uploadMapFiles);
 router.post("/map", createMap);
 
 export default router;

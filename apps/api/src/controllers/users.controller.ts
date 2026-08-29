@@ -62,7 +62,7 @@ export const getAllElements = async (req: Request, res: Response) => {
         imageUrl: x.imageUrl,
         width: x.width,
         height: x.height,
-        position: x.position,
+        collides: x.collides,
       })),
     });
   } catch (error) {
@@ -98,3 +98,27 @@ export const getUsersMetadata = async (req: Request, res: Response) => {
     errorHandler({ error, res });
   }
 };
+
+export const getAllMaps = async (req:Request,res:Response) => {
+  try {
+    const maps = await prisma.map.findMany(
+      {
+        select:{
+          id:true,
+          thumbnail:true,
+          name:true,
+          height:true,
+          width:true
+        }
+      }
+    )
+
+    if (!maps) {
+      return res.status(404).json({success:false, errorMessage:"Maps not found"})
+    }
+
+    res.status(200).json({success:true,maps:maps})
+  } catch (error) {
+    errorHandler({error,res})
+  }
+}

@@ -43,6 +43,7 @@ export const createSpace = async (req: Request, res: Response) => {
       },
       select: {
         mapElements: true,
+        thumbnail: true,
         height: true,
         width: true,
       },
@@ -59,6 +60,7 @@ export const createSpace = async (req: Request, res: Response) => {
         data: {
           name,
           width: map.width,
+          thumbnail: map.thumbnail ? map.thumbnail : null,
           height: map.height,
           creatorId: req.userId,
         },
@@ -133,17 +135,27 @@ export const deleteSpace = async (req: Request, res: Response) => {
 
 export const getAllSpaces = async (req: Request, res: Response) => {
   try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
     if (!req.userId) {
       return res
         .status(401)
         .json({ success: false, message: "Unauthorized", spaces: [] });
     }
 
-    const spaces = await prisma.space.findMany({
-      where: {
-        creatorId: req.userId,
-      },
-    });
+    const [spaces, total] = await Promise.all([
+      prisma.space.findMany({
+        where: {
+          creatorId: req.userId,
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.space.count({ where: { creatorId: req.userId } }),
+    ]);
 
     res.status(200).json({
       success: true,
@@ -153,6 +165,11 @@ export const getAllSpaces = async (req: Request, res: Response) => {
         thumbnail: s.thumbnail,
         dimensions: `${s.width}x${s.height}`,
       })),
+      pagination:{
+        page,
+        totalPages:Math.ceil(total/limit),
+        totalSpaces:total
+      }
     });
   } catch (error) {
     errorHandler({ error, res });
@@ -182,8 +199,6 @@ export const addElementInSpace = async (req: Request, res: Response) => {
       },
     });
 
-    
-
     if (!space) {
       return res
         .status(400)
@@ -191,7 +206,9 @@ export const addElementInSpace = async (req: Request, res: Response) => {
     }
 
     if (x >= space.width && y >= space.height) {
-      return res.status(400).json({success:false, errorMessage:"Element size is too bif"})
+      return res
+        .status(400)
+        .json({ success: false, errorMessage: "Element size is too bif" });
     }
 
     await prisma.spaceElements.create({
@@ -291,7 +308,7 @@ export const getSpace = async (req: Request, res: Response) => {
             imageUrl: e.element.imageUrl,
             width: e.element.width,
             height: e.element.height,
-            position: e.element.position,
+            collides: e.element.collides,
           },
           x: e.x,
           y: e.y,

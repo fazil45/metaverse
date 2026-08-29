@@ -34,6 +34,7 @@ model Space {
   height    Int
   thumbnail String?
   creatorId String
+  createdAt DateTime        @default(now())
   creator   User            @relation(fields: [creatorId], references: [id])
   elements  spaceElements[]
 }
@@ -59,16 +60,15 @@ model Element {
 }
 
 model Map {
-  id          String        @id @unique @default(cuid())
-  width       Int
-  height      Int
-  name        String
-  thumbnail   String
+  id              String        @id @unique @default(cuid())
+  width           Int
+  height          Int
+  name            String
+  thumbnail       String
   tilesetImageUrl String
   tiledJsonUrl    String
-  mapElements MapElements[]
+  mapElements     MapElements[]
 }
-
 
 model MapElements {
   id        String  @id @unique @default(cuid())

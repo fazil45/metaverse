@@ -19,14 +19,14 @@ export const createElement = async (req: Request, res: Response) => {
         .json({ success: false, errorMessage: "Invalid inputs" });
     }
 
-    const { height, imageUrl, position, width } = parsedCreateElementData.data;
+    const { height, imageUrl, collides, width } = parsedCreateElementData.data;
 
     const element = await prisma.element.create({
       data: {
         width: width,
         height: height,
         imageUrl: imageUrl,
-        position: position,
+        collides: collides,
       },
     });
 
@@ -42,23 +42,31 @@ export const createElement = async (req: Request, res: Response) => {
 
 export const createMap = async (req: Request, res: Response) => {
   try {
-    const parsedUpdateElementData = CreateMapSchema.safeParse(req.body);
+    const parsedMapData = CreateMapSchema.safeParse(req.body);
 
-    if (!parsedUpdateElementData.success) {
+    if (!parsedMapData.success) {
       return res.status(400).json({
         success: false,
         errorMessage: "Invalid inputs",
       });
     }
 
-    const { defaultElements, dimensions, thumbnail, name } =
-      parsedUpdateElementData.data;
+    const {
+      defaultElements,
+      tiledJsonUrl,
+      tilesetImageUrl,
+      dimensions,
+      thumbnail,
+      name,
+    } = parsedMapData.data;
 
     const map = await prisma.map.create({
       data: {
         name: name,
         width: parseInt(dimensions.split("x")[0]!),
         height: parseInt(dimensions.split("x")[1]!),
+        tiledJsonUrl: tiledJsonUrl,
+        tilesetImageUrl: tilesetImageUrl,
         thumbnail: thumbnail,
         mapElements: {
           create: defaultElements.map((e) => ({
@@ -151,5 +159,3 @@ export const createAvatar = async (req: Request, res: Response) => {
     errorHandler({ error, res });
   }
 };
-
-

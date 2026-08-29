@@ -10,7 +10,7 @@ import {
 } from "../controllers/space.controller.js";
 const router: Router = Router();
 
-router.post("/", authMiddleware, createSpace);
+router.post("/create", authMiddleware, createSpace);
 router.get("/all", authMiddleware, getAllSpaces);
 router.delete("/:spaceId", authMiddleware, deleteSpace);
 router.get("/:spaceId", authMiddleware, getSpace);

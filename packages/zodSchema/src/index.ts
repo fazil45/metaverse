@@ -30,7 +30,8 @@ export const CreateElementSchema = z.object({
   imageUrl: z.string(),
   width: z.number(),
   height: z.number(),
-  position: z.boolean(),
+  collides: z.boolean(),
+  
 });
 
 export const UpdateElementSchema = z.object({
@@ -46,6 +47,8 @@ export const CreateMapSchema = z.object({
   name: z.string(),
   thumbnail: z.string(),
   dimensions: z.string().regex(/^[0-9]{1,4}x[0-9]{1,4}$/),
+  tiledJsonUrl: z.string(),
+  tilesetImageUrl: z.string(),
   defaultElements: z.array(
     z.object({
       elementId: z.string(),
